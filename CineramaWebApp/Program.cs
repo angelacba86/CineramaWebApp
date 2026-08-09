@@ -1,7 +1,15 @@
+using CineramaWebApp.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+// Registro de Repositorios Dapper por dominio
+builder.Services.AddScoped<ICineRepository, CineRepository>();
+builder.Services.AddScoped<ICarteleraRepository, CarteleraRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IVentaRepository, VentaRepository>();
+
 
 var app = builder.Build();
 
