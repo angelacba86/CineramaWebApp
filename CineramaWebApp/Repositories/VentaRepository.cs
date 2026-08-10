@@ -18,20 +18,15 @@ namespace CineramaWebApp.Repositories
         {
             using var connection = new SqlConnection(_connectionString);
 
-            // Crear el DataTable para el tipo de tabla de SQL (AsientosListType)
-            var tablaAsientos = new DataTable();
-            tablaAsientos.Columns.Add("idAsiento", typeof(int));
-            foreach (var idAsiento in ventaDto.ListaAsientos)
-            {
-                tablaAsientos.Rows.Add(idAsiento);
-            }
+            var asientosJson = System.Text.Json.JsonSerializer.Serialize(ventaDto.ListaAsientos);
+            var urlPDF = $"/boletos/ticket_{Guid.NewGuid():N}.pdf";
 
             var parametros = new DynamicParameters();
-            parametros.Add("@idUsuario", ventaDto.IdUsuario);
             parametros.Add("@idFuncion", ventaDto.IdFuncion);
-            parametros.Add("@cantidad", ventaDto.ListaAsientos.Count);
-            parametros.Add("@urlPDF", $"/boletos/ticket_{Guid.NewGuid():N}.pdf");
-            parametros.Add("@asientos", tablaAsientos.AsTableValuedParameter("AsientosListType"));
+            parametros.Add("@idUsuario", ventaDto.IdUsuario);
+            parametros.Add("@asientosJson", asientosJson);
+            parametros.Add("@urlPDF", urlPDF);
+            parametros.Add("@idVentaResultado", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             try
             {

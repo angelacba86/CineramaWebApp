@@ -13,6 +13,8 @@ builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IVentaRepository, VentaRepository>();
 
 builder.Services.AddScoped<IVentaService, VentaService>();
+builder.Services.AddScoped<IBoletoService, BoletoService>();
+builder.Services.AddScoped<IFidelizacionService, FidelizacionService>();
 // Registrar Servicio de Autenticación
 builder.Services.AddScoped<IAuthService, AuthService>();
 // Configurar Autenticación por Cookies
@@ -35,7 +37,8 @@ app.UseRouting();
 app.UseAuthentication(); //ve usuario
 app.UseAuthorization(); //ve permisos
 
-//app.MapStaticAssets();
+app.UseStaticFiles();
+app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
