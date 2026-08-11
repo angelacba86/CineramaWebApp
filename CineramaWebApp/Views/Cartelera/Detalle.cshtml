@@ -1,0 +1,220 @@
+﻿@model CineramaWebApp.Models.DTOs.PeliculaDTO
+
+@{
+    ViewData["Title"] = Model.Titulo + " - Cinerama";
+}
+
+<style>
+    .asiento {
+        width: 40px;
+        height: 40px;
+        margin: 4px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 12px;
+        user-select: none;
+    }
+
+    .asiento-libre {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .asiento-ocupado {
+        background-color: #dc3545;
+        color: white;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .asiento-seleccionado {
+        background-color: #ffc107;
+        color: black;
+    }
+
+    .pantalla-cine {
+        background: #333;
+        color: #fff;
+        text-align: center;
+        padding: 8px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        letter-spacing: 4px;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <img src="@Model.ImagenUrl" class="card-img-top" alt="@Model.Titulo" onerror="this.src='https://via.placeholder.com/300x450?text=Cinerama';">
+                <div class="card-body">
+                    <h3 class="fw-bold">@Model.Titulo</h3>
+                    <p class="text-muted mb-1"><strong>Clasificación:</strong> @Model.Clasificacion | <strong>Duración:</strong> @Model.DuracionMinutos min</p>
+                    <p class="text-muted"><strong>Género:</strong> @Model.Genero</p>
+                    <p class="small">@Model.Sinopsis</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 p-4">
+                <h4 class="fw-bold text-danger mb-3">1. Selecciona tu Función</h4>
+                <div class="row g-2 mb-4">
+                    @if (ViewBag.Funciones != null)
+                    {
+                        foreach (var fn in ViewBag.Funciones)
+                        {
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-outline-danger w-100 btn-funcion" data-id="@fn.IdFuncion" onclick="cargarMapaAsientos(@fn.IdFuncion, this)">
+                                    📅 @fn.FechaHora.ToString("dd/MM/yyyy HH:mm") - S/ @fn.PrecioUnitario.ToString("F2")
+                                </button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No hay funciones disponibles en este momento.</p>
+                    }
+                </div>
+
+                <hr />
+
+                <div id="seccionAsientos" style="display:none;">
+                    <h4 class="fw-bold text-danger mb-3">2. Selecciona tus Asientos</h4>
+                    <div class="pantalla-cine">🎭 PANTALLA</div>
+
+                    <div id="contenedorAsientos" class="text-center mb-4">
+                    </div>
+
+                    <div class="bg-light p-3 rounded d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <p class="mb-0"><strong>Asientos seleccionados:</strong> <span id="lblAsientos">-</span></p>
+                            <p class="mb-0"><strong>Total a pagar:</strong> S/ <span id="lblTotal">0.00</span></p>
+                        </div>
+                        <button id="btnComprar" type="button" class="btn btn-success btn-lg" onclick="procesarCompra()" disabled>
+                            💳 Finalizar Compra
+                        </button>
+                    </div>
+
+                    <div id="mensajeAlerta" class="alert d-none" role="alert"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let funcionSeleccionada = 0;
+        let asientosSeleccionados = [];
+
+        // 1. Cargar Mapa de Asientos vía AJAX
+        async function cargarMapaAsientos(idFuncion, elemento) {
+            funcionSeleccionada = idFuncion;
+            asientosSeleccionados = [];
+            actualizarResumen();
+
+            // Resaltar botón activo
+            document.querySelectorAll('.btn-funcion').forEach(b => b.classList.remove('active', 'btn-danger'));
+            document.querySelectorAll('.btn-funcion').forEach(b => b.classList.add('btn-outline-danger'));
+            elemento.classList.remove('btn-outline-danger');
+            elemento.classList.add('btn-danger', 'active');
+
+            const contenedor = document.getElementById('contenedorAsientos');
+            contenedor.innerHTML = '<div class="spinner-border text-danger" role="status"></div>';
+            document.getElementById('seccionAsientos').style.display = 'block';
+
+            try {
+                const response = await fetch(`/Venta/MapaAsientos?idFuncion=${idFuncion}`);
+                const asientos = await response.json();
+
+                contenedor.innerHTML = '';
+                asientos.forEach(a => {
+                    const div = document.createElement('div');
+                    const estaOcupado = a.ocupado === 1 || a.disponible === 0;
+
+                    div.className = `asiento ${estaOcupado ? 'asiento-ocupado' : 'asiento-libre'}`;
+                    div.innerText = `${a.fila || ''}${a.numero || a.idAsiento}`;
+                    div.dataset.id = a.idAsiento;
+
+                    if (!estaOcupado) {
+                        div.onclick = () => alternarAsiento(div, a.idAsiento);
+                    }
+
+                    contenedor.appendChild(div);
+                });
+            } catch (error) {
+                contenedor.innerHTML = '<p class="text-danger">Error al cargar el mapa de asientos.</p>';
+            }
+        }
+
+        // 2. Selección de Asientos
+        function alternarAsiento(div, idAsiento) {
+            if (div.classList.contains('asiento-seleccionado')) {
+                div.classList.remove('asiento-seleccionado');
+                div.classList.add('asiento-libre');
+                asientosSeleccionados = asientosSeleccionados.filter(id => id !== idAsiento);
+            } else {
+                div.classList.remove('asiento-libre');
+                div.classList.add('asiento-seleccionado');
+                asientosSeleccionados.push(idAsiento);
+            }
+            actualizarResumen();
+        }
+
+        function actualizarResumen() {
+            document.getElementById('lblAsientos').innerText = asientosSeleccionados.length > 0 ? asientosSeleccionados.join(', ') : '-';
+            const total = asientosSeleccionados.length * 15.00;
+            document.getElementById('lblTotal').innerText = total.toFixed(2);
+            document.getElementById('btnComprar').disabled = asientosSeleccionados.length === 0;
+        }
+
+        // 3. Enviar Compra a la API vía AJAX
+        async function procesarCompra() {
+            if (asientosSeleccionados.length === 0) return;
+
+            const btn = document.getElementById('btnComprar');
+            btn.disabled = true;
+            btn.innerText = 'Procesando...';
+
+            const payload = {
+                idFuncion: funcionSeleccionada,
+                idUsuario: 1, // Si inició sesión el controller usará su ID de cookie
+                listaAsientos: asientosSeleccionados
+            };
+
+            try {
+                const res = await fetch('/Venta/ProcesarCompra', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                const alerta = document.getElementById('mensajeAlerta');
+                alerta.classList.remove('d-none', 'alert-success', 'alert-danger');
+
+                if (data.exito) {
+                    alerta.classList.add('alert-success');
+                    alerta.innerHTML = `<strong>¡Éxito!</strong> ${data.mensaje} <br/> <a href="${data.urlPdf}" target="_blank" class="btn btn-sm btn-dark mt-2">📥 Descargar Boleto PDF</a>`;
+                    // Recargar asientos para marcar como ocupados
+                    cargarMapaAsientos(funcionSeleccionada, document.querySelector('.btn-funcion.active'));
+                } else {
+                    alerta.classList.add('alert-danger');
+                    alerta.innerText = data.mensaje;
+                }
+            } catch (e) {
+                alert('Ocurrió un error al procesar la transacción.');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '💳 Finalizar Compra';
+            }
+        }
+    </script>
+}

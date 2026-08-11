@@ -1,0 +1,65 @@
+﻿@model IEnumerable<CineramaWebApp.Models.DTOs.CarteleraDTO>
+
+@{
+    ViewData["Title"] = "Cartelera Oficial - Cinerama";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-danger fw-bold">🎬 Cartelera Cinerama</h2>
+            <p class="text-muted">Selecciona tu cine favorito y descubre las películas en función.</p>
+        </div>
+        <div class="col-md-4">
+            <form method="get" asp-action="Index" id="formCine">
+                <label class="form-label fw-bold">Filtrar por Cine:</label>
+                <select name="idCine" class="form-select" onchange="document.getElementById('formCine').submit()">
+                    <option value="">-- Todos los Cines --</option>
+                    @if (ViewBag.Cines != null)
+                    {
+                        foreach (var cine in ViewBag.Cines)
+                        {
+                            var selected = ViewBag.IdCineSeleccionado == cine.IdCine ? "selected" : null;
+                            <!option value="@cine.IdCine" @selected>@cine.Nombre (@cine.Ciudad)</!option>
+                        }
+                    }
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var pelicula in Model)
+            {
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="@pelicula.ImagenUrl" class="card-img-top" alt="@pelicula.Titulo" style="height: 350px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/300x450?text=Cinerama';">
+                        <div class="card-body d-flex flex-column">
+                            <span class="badge bg-secondary mb-2 align-self-start">@pelicula.Clasificacion</span>
+                            <h5 class="card-title fw-bold">@pelicula.Titulo</h5>
+                            <p class="card-text text-muted small">@pelicula.Genero | @pelicula.DuracionMinutos min</p>
+                            <p class="card-text small text-truncate">@pelicula.Sinopsis</p>
+
+                            <div class="mt-auto">
+                                <a asp-controller="Cartelera"
+                                   asp-action="Detalle"
+                                   asp-route-id="@pelicula.IdPelicula"
+                                   class="btn btn-danger w-100">
+                                    🎟️ Ver Funciones
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-warning">No hay películas disponibles para el cine seleccionado en este momento.</div>
+            </div>
+        }
+    </div>
+</div>

@@ -14,6 +14,15 @@ namespace CineramaWebApp.Repositories
             _connectionString = configuration.GetConnectionString("CineramaConnection")!;
         }
 
+        public async Task<PeliculaDTO?> ObtenerDetallePeliculaAsync(int idPelicula)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            return await connection.QueryFirstOrDefaultAsync<PeliculaDTO>(
+                "sp_ObtenerDetallePelicula",
+                new { idPelicula },
+                commandType: CommandType.StoredProcedure);
+        }
+
         public async Task<IEnumerable<CarteleraDTO>> ListarCarteleraPorCineAsync(int? idCine, DateTime? fecha = null)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -23,7 +32,7 @@ namespace CineramaWebApp.Repositories
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task<IEnumerable<FuncionDisponibleDTO>> ObtenerFuncionesPorPeliculaAsync(int idPelicula, int idCine, DateTime? fecha = null)
+        public async Task<IEnumerable<FuncionDisponibleDTO>> ObtenerFuncionesPorPeliculaAsync(int idPelicula, int idCine = 0, DateTime? fecha = null)
         {
             using var connection = new SqlConnection(_connectionString);
             return await connection.QueryAsync<FuncionDisponibleDTO>(

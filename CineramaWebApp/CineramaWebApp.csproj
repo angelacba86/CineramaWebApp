@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Cartelera\" />
+    <Folder Include="Models\ViewModels\" />
     <Folder Include="Views\Reserva\" />
   </ItemGroup>
 
