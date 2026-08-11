@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Text.RegularExpressions;
 using CineramaWebApp.Models.DTOs;
 using Dapper;
 using Microsoft.Data.SqlClient;
@@ -35,10 +36,33 @@ namespace CineramaWebApp.Repositories
         public async Task<IEnumerable<AsientoMapaDTO>> ObtenerMapaAsientosAsync(int idFuncion)
         {
             using var connection = new SqlConnection(_connectionString);
-            return await connection.QueryAsync<AsientoMapaDTO>(
+
+            var filasCrudas = await connection.QueryAsync<dynamic>(
                 "sp_ObtenerMapaAsientos",
                 new { idFuncion },
                 commandType: CommandType.StoredProcedure);
+
+            var resultado = new List<AsientoMapaDTO>();
+            var regex = new Regex(@"^([A-Za-z]+)(\d+)$");
+
+            foreach (var fila in filasCrudas)
+            {
+                string codigo = fila.codigo?.ToString() ?? "";
+                var match = regex.Match(codigo);
+
+                resultado.Add(new AsientoMapaDTO
+                {
+                    IdAsiento = (int)fila.idAsiento,
+                    Fila = match.Success ? match.Groups[1].Value : "?",
+                    Numero = match.Success ? int.Parse(match.Groups[2].Value) : 0,
+                    Ocupado = Convert.ToBoolean(fila.ocupado)
+                });
+            }
+
+            return resultado
+                .OrderBy(a => a.Fila)
+                .ThenBy(a => a.Numero)
+                .ToList();
         }
     }
 }

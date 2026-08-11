@@ -22,7 +22,18 @@ namespace CineramaWebApp.Controllers
             _carteleraRepository = carteleraRepository;
         }
 
-        // GET: /Venta/MapaAsientos?idFuncion=1
+        // =========================================================================
+        // ACCIÓN PARA CARGAR LA VISTA DE LA CARD 13 (SELECCIÓN DE ASIENTOS)
+        // GET: /Venta/SeleccionarAsientos?idFuncion=1
+        // =========================================================================
+        [HttpGet]
+        public IActionResult SeleccionarAsientos(int idFuncion = 1)
+        {
+            ViewBag.IdFuncion = idFuncion;
+            return View();
+        }
+
+        // GET: /Venta/MapaAsientos?idFuncion=1 (Consumido mediante fetch por JavaScript)
         [HttpGet]
         public async Task<IActionResult> MapaAsientos(int idFuncion)
         {
