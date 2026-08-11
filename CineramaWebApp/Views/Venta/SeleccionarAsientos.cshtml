@@ -78,6 +78,9 @@
                     document.getElementById("gridAsientos").innerHTML =
                         `<div class="alert alert-danger w-100 text-center">Error al conectar con la base de datos.</div>`;
                 });
+
+            // Asignar evento al botón continuar
+            document.getElementById("btnContinuar").addEventListener("click", irAlPago);
         });
 
         function renderizarMapa(listaAsientos) {
@@ -167,16 +170,23 @@
             document.getElementById("lblTotal").textContent = total.toFixed(2);
         }
 
-        // Persistencia para continuar al flujo de identificación / pago
-        document.getElementById("btnContinuar").addEventListener("click", () => {
-            const payload = {
-                idFuncion: ID_FUNCION,
-                listaAsientos: asientosSeleccionados.map(a => a.idAsiento),
-                montoTotal: asientosSeleccionados.length * PRECIO_UNITARIO
-            };
+        function irAlPago() {
+            if (!asientosSeleccionados || asientosSeleccionados.length === 0) {
+                alert("Por favor, selecciona al menos un asiento antes de continuar.");
+                return;
+            }
 
-            sessionStorage.setItem("reservaCinerama", JSON.stringify(payload));
-            window.location.href = "/Venta/Identificacion";
-        });
+            const totalCalculado = asientosSeleccionados.length * PRECIO_UNITARIO;
+            // Extraer solo los IDs simples [1, 2, 3] para enviárselos al backend
+            const listaIds = asientosSeleccionados.map(a => a.idAsiento);
+
+            // Guardar en sessionStorage con las claves que Pago.cshtml espera
+            sessionStorage.setItem("idFuncion", ID_FUNCION.toString());
+            sessionStorage.setItem("asientosIds", JSON.stringify(listaIds));
+            sessionStorage.setItem("montoTotal", totalCalculado.toString());
+
+            // Redirigir a la pantalla de Pago
+            window.location.href = '/Venta/Pago';
+        }
     </script>
 }

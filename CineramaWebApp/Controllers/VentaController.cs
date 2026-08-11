@@ -107,6 +107,27 @@ namespace CineramaWebApp.Controllers
                 codigoTicket = resultadoVenta.CodigoTicket,
                 urlPdf = resultadoVenta.UrlPDF
             });
+
+
+        }
+
+        //
+        // GET: /Venta/Pago
+        [HttpGet]
+        public IActionResult Pago()
+        {
+            return View();
+        }
+
+        // GET: /Venta/Confirmacion?idVenta=X&codigoTicket=Y&urlPdf=Z
+        [HttpGet]
+        public IActionResult Confirmacion(int idVenta, string codigoTicket, string urlPdf)
+        {
+            ViewBag.IdVenta = idVenta;
+            ViewBag.CodigoTicket = codigoTicket;
+            ViewBag.UrlPdf = urlPdf;
+            return View();
         }
     }
+
 }

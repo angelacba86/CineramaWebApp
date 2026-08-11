@@ -1,0 +1,134 @@
+﻿@{
+    ViewData["Title"] = "Pago Simulado - Cinerama";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-dark text-white shadow-lg border-secondary">
+                <div class="card-header bg-danger text-white text-center py-3">
+                    <h3 class="mb-0 fw-bold">PAGO SIMULADO</h3>
+                </div>
+                <div class="card-body p-4">
+                    
+                    <ul class="nav nav-pills nav-justified mb-4" id="pagoTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active text-white fw-bold bg-danger" id="tarjeta-tab" data-bs-toggle="pill" data-bs-target="#tarjeta" type="button" role="tab">💳 Tarjeta</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-white fw-bold" id="yape-tab" data-bs-toggle="pill" data-bs-target="#yape" type="button" role="tab">📱 Yape / Plin</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-white fw-bold" id="puntos-tab" data-bs-toggle="pill" data-bs-target="#puntos" type="button" role="tab">⭐ Puntos</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="pagoTabContent">
+                        
+                        <div class="tab-pane fade show active" id="tarjeta" role="tabpanel">
+                            <form id="formTarjeta">
+                                <div class="mb-3">
+                                    <label class="form-label">Número de Tarjeta</label>
+                                    <input type="text" class="form-control bg-secondary text-white border-0" placeholder="0000 0000 0000 0000" maxlength="16">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Fecha de Vencimiento</label>
+                                        <input type="text" class="form-control bg-secondary text-white border-0" placeholder="MM/YY" maxlength="5">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">CVV</label>
+                                        <input type="password" class="form-control bg-secondary text-white border-0" placeholder="123" maxlength="3">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Titular de la Tarjeta</label>
+                                    <input type="text" class="form-control bg-secondary text-white border-0" placeholder="Nombre completo">
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="tab-pane fade text-center py-3" id="yape" role="tabpanel">
+                            <p class="mb-2">Escanea el código QR para realizar la simulación:</p>
+                            <div class="bg-white p-3 d-inline-block rounded mb-3">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CineramaPagoSimulado" alt="QR Pago" class="img-fluid" />
+                            </div>
+                            <p class="text-muted small">El pago se validará automáticamente al presionar Confirmar.</p>
+                        </div>
+
+                        <div class="tab-pane fade" id="puntos" role="tabpanel">
+                            <div class="alert alert-info bg-dark text-info border-info">
+                                <p class="mb-1"><strong>Puntos Disponibles:</strong> 150 Pts</p>
+                                <p class="mb-0"><strong>Equivalencia:</strong> 10 Puntos = S/ 1.00</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Puntos a Canjear</label>
+                                <input type="number" class="form-control bg-secondary text-white border-0" placeholder="Ej. 50">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <hr class="border-secondary my-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="fs-5">Total a Pagar:</span>
+                        <span class="fs-3 fw-bold text-danger" id="lblTotalPagar">S/ 0.00</span>
+                    </div>
+
+                    <button type="button" class="btn btn-danger w-100 btn-lg fw-bold" onclick="ejecutarCompra()">
+                        CONFIRMAR Y PAGAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const total = sessionStorage.getItem("montoTotal") || "0.00";
+        document.getElementById("lblTotalPagar").textContent = "S/ " + parseFloat(total).toFixed(2);
+    });
+
+    function ejecutarCompra() {
+        const idFuncion = sessionStorage.getItem("idFuncion") || 1;
+        const asientosIds = JSON.parse(sessionStorage.getItem("asientosIds") || "[]");
+
+        if (!asientosIds.length) {
+            alert("No hay asientos seleccionados en la sesión.");
+            return;
+        }
+
+        // DTO exacto esperado por tu VentaController (ProcesarCompra)
+        const payload = {
+            IdFuncion: parseInt(idFuncion),
+            IdUsuario: 1, 
+            ListaAsientos: asientosIds
+        };
+
+        fetch('/Venta/ProcesarCompra', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.exito) {
+                // Limpiamos los datos del mapa de asientos
+                sessionStorage.removeItem("asientosIds");
+                sessionStorage.removeItem("montoTotal");
+
+                // Redireccionar a la pantalla de confirmación enviando datos del ticket
+                const urlConfirmacion = `/Venta/Confirmacion?idVenta=${data.idVenta}&codigoTicket=${encodeURIComponent(data.codigoTicket || '')}&urlPdf=${encodeURIComponent(data.urlPdf || '')}`;
+                window.location.href = urlConfirmacion;
+            } else {
+                alert("Atención: " + data.mensaje);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Ocurrió un error al procesar el pago.");
+        });
+    }
+</script>
