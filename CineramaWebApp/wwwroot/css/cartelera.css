@@ -1,0 +1,139 @@
+﻿/* ==========================================
+   1. ESTILOS GENERALES Y LAYOUT BASE
+   ========================================== */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #212529;
+}
+
+.main-content {
+    flex: 1;
+}
+
+.navbar-brand {
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+}
+
+footer {
+    background-color: #1a1a1a;
+    color: #ccc;
+}
+
+    footer a {
+        color: #ccc;
+        text-decoration: none;
+    }
+
+        footer a:hover {
+            color: #dc3545;
+        }
+
+/* ==========================================
+   2. CARDS DE PELÍCULAS (CARTELERA PRINCIPAL)
+   ========================================== */
+.movie-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    height: 420px;
+    background-color: #0a0a0a;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .movie-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 25px rgba(220, 53, 69, 0.5);
+    }
+
+    .movie-card .card-img-poster {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .movie-card:hover .card-img-poster {
+        transform: scale(1.08);
+    }
+
+    .movie-card .movie-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.8) 60%, rgba(0, 0, 0, 0.3) 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 1.25rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .movie-card:hover .movie-overlay {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ==========================================
+   3. PASO 1 Y PASO 2 (DETALLE DE PELÍCULA)
+   ========================================== */
+/* Cards de Selección de Cine */
+.card-cine-select {
+    background-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    text-decoration: none !important;
+}
+
+    .card-cine-select:hover {
+        background-color: rgba(0, 0, 0, 0.3) !important;
+        transform: translateY(-2px);
+    }
+
+/* Píldoras de Horarios completamente rojas */
+.pildora-horario {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+    border: none !important;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    text-decoration: none !important;
+    font-weight: bold;
+}
+
+    .pildora-horario:hover {
+        background-color: #bb2d3b !important;
+        color: #ffffff !important;
+        transform: scale(1.05);
+    }
+
+/* Botón sutil 'Cambiar Cine' */
+.btn-cambiar-cine {
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    transition: color 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+    .btn-cambiar-cine:hover {
+        color: #adb5bd !important;
+        text-decoration: underline !important;
+    }

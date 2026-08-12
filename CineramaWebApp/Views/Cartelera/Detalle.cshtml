@@ -1,80 +1,16 @@
-﻿@model CineramaWebApp.Models.DTOs.PeliculaDTO
-@using System.Globalization
+﻿@model CineramaWebApp.Models.ViewModels.DetallePeliculaViewModel
 
 @{
-    ViewData["Title"] = Model.Titulo + " - Cinerama";
-    int idCineSel = ViewBag.IdCineSeleccionado ?? 0;
-    string ciudadSel = ViewBag.CiudadSeleccionada ?? "";
-    DateTime fechaSel = ViewBag.FechaSeleccionada ?? DateTime.Today;
-    var cultureEs = new CultureInfo("es-ES");
+    ViewData["Title"] = Model.Pelicula.Titulo + " - Cinerama";
 }
-
-<style>
-    /* Cards de Selección de Cine (Transparentes y se oscurecen al hover) */
-    .card-cine-select {
-        background-color: transparent !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        transition: background-color 0.2s ease, transform 0.2s ease;
-        text-decoration: none !important;
-    }
-
-        .card-cine-select:hover {
-            background-color: rgba(0, 0, 0, 0.3) !important;
-            transform: translateY(-2px);
-        }
-
-    /* Píldoras de Horarios completamente rojas sin precio */
-    .pildora-horario {
-        background-color: #dc3545 !important;
-        color: #ffffff !important;
-        border: none !important;
-        transition: transform 0.2s ease, background-color 0.2s ease;
-        text-decoration: none !important;
-        font-weight: bold;
-    }
-
-        .pildora-horario:hover {
-            background-color: #bb2d3b !important;
-            color: #ffffff !important;
-            transform: scale(1.05);
-        }
-
-    /* Botón sutil 'Cambiar Cine' (Solo texto, sin bordes ni fondo de botón) */
-    .btn-cambiar-cine {
-        color: #ffffff !important;
-        text-decoration: none !important;
-        font-size: 0.85rem !important;
-        font-weight: 500 !important;
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 0.25rem !important;
-        transition: color 0.2s ease !important;
-        box-shadow: none !important;
-    }
-
-        .btn-cambiar-cine:hover {
-            color: #adb5bd !important; /* Pasa de blanco a gris claro */
-            text-decoration: underline !important;
-        }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/cartelera.css" asp-append-version="true" />
+}
 
 <div class="container mt-4 mb-5">
     <div class="row">
         <div class="col-md-4 mb-4">
-            <div class="card shadow-lg border-secondary bg-dark text-white rounded-3 overflow-hidden">
-                <img src="@(string.IsNullOrEmpty(Model.PosterUrl) ? Model.PosterUrl : Model.PosterUrl)" class="card-img-top" alt="@Model.Titulo" style="height: 420px; object-fit: cover;" onerror="this.src='https://placehold.co/300x450/1a1a1a/ffffff?text=Cinerama';">
-                <div class="card-body p-4">
-                    <span class="badge bg-danger mb-2">@Model.Clasificacion</span>
-                    <h3 class="fw-bold text-white mb-2">@Model.Titulo</h3>
-                    <p class="text-secondary small mb-2">
-                        🎭 @Model.Genero | ⏱️ @Model.DuracionMinutos min
-                    </p>
-                    <p class="small text-secondary mb-0">@Model.Sinopsis</p>
-                </div>
-            </div>
+            <partial name="_DetallePeliculaCard" model="Model.Pelicula" />
         </div>
 
         <div class="col-md-8">
@@ -82,13 +18,13 @@
 
                 <div class="bg-danger text-white p-3 d-flex justify-content-between align-items-center">
                     <h4 class="fw-bold mb-0 text-white">
-                        @(idCineSel == 0 ? "1. Elige tu cine" : "2. Selecciona Horario")
+                        @(Model.IdCineSeleccionado == 0 ? "1. Elige tu cine" : "2. Selecciona Horario")
                     </h4>
 
                     <a asp-controller="Cartelera"
                        asp-action="Index"
-                       asp-route-idCine="@idCineSel"
-                       asp-route-ciudad="@ciudadSel"
+                       asp-route-idCine="@Model.IdCineSeleccionado"
+                       asp-route-ciudad="@Model.CiudadSeleccionada"
                        class="btn btn-link text-white text-decoration-none fs-4 fw-bold p-0 lh-1"
                        title="Volver a la cartelera principal">
                         ✕
@@ -96,117 +32,14 @@
                 </div>
 
                 <div class="p-4">
-
-                    @if (idCineSel == 0)
+                    @if (Model.IdCineSeleccionado == 0)
                     {
-                        <p class="text-white-50 mb-3">Selecciona el cine de tu preferencia para consultar los horarios disponibles:</p>
-
-                        <div class="row g-3 mb-3">
-                            @if (ViewBag.CinesDisponibles != null && ((IEnumerable<dynamic>)ViewBag.CinesDisponibles).Any())
-                            {
-                                foreach (var cine in ViewBag.CinesDisponibles)
-                                {
-                                    <div class="col-md-6">
-                                        <a asp-controller="Cartelera"
-                                           asp-action="Detalle"
-                                           asp-route-id="@Model.IdPelicula"
-                                           asp-route-idCine="@cine.IdCine"
-                                           asp-route-ciudad="@ciudadSel"
-                                           class="card card-cine-select text-white p-3 rounded-3 d-block h-100">
-                                            <div>
-                                                <h5 class="fw-bold text-white mb-1">@cine.Nombre</h5>
-                                                <p class="small text-white-50 mb-0">📍 @cine.Ciudad - @cine.Direccion</p>
-                                            </div>
-                                        </a>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <div class="col-12">
-                                    <div class="p-4 text-center border border-secondary rounded-3 text-white-50">
-                                        No hay cines disponibles con funciones activas para esta película.
-                                    </div>
-                                </div>
-                            }
-                        </div>
+                        <partial name="_Paso1SeleccionarCine" model="Model" />
                     }
-
-                    @if (idCineSel > 0)
+                    else
                     {
-                        <div class="mb-3">
-                            <a asp-controller="Cartelera"
-                               asp-action="Detalle"
-                               asp-route-id="@Model.IdPelicula"
-                               asp-route-idCine="0"
-                               asp-route-ciudad="@ciudadSel"
-                               class="btn-cambiar-cine">
-                                ← Cambiar Cine
-                            </a>
-                        </div>
-
-                        <div class="p-0 mb-4 text-white">
-                            <span class="text-white-50 small d-block">Cine Seleccionado:</span>
-                            <h5 class="fw-bold text-white mb-0">@(ViewBag.CineActual?.Nombre ?? "Cinerama")</h5>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label text-white fw-bold mb-2">Selecciona la Fecha de la Función:</label>
-                            <select id="comboFecha" class="form-select bg-dark text-white border-secondary p-2 fw-semibold" onchange="cambiarFecha(this.value)">
-                                @if (ViewBag.FechasDisponibles != null)
-                                {
-                                    foreach (DateTime f in ViewBag.FechasDisponibles)
-                                    {
-                                        bool esHoy = f.Date == DateTime.Today;
-                                        bool esManana = f.Date == DateTime.Today.AddDays(1);
-                                        string textoFecha = esHoy ? $"Hoy - {f.ToString("dd/MM/yyyy")}" :
-                                                            esManana ? $"Mañana - {f.ToString("dd/MM/yyyy")}" :
-                                                            $"{f.ToString("dddd dd 'de' MMMM", cultureEs)} ({f.ToString("dd/MM/yyyy")})";
-
-                                        <option value="@f.ToString("yyyy-MM-dd")" selected="@(f.Date == fechaSel.Date ? "selected" : null)">
-                                            @textoFecha
-                                        </option>
-                                    }
-                                }
-                            </select>
-                        </div>
-
-                        <h6 class="fw-bold text-white mb-3">Horarios Disponibles:</h6>
-
-                        @if (ViewBag.Funciones != null && ((IEnumerable<dynamic>)ViewBag.Funciones).Any())
-                        {
-                            var funcionesLista = (IEnumerable<dynamic>)ViewBag.Funciones;
-                            var gruposPorSala = funcionesLista.GroupBy(f => f.NumeroSala);
-
-                            foreach (var grupoSala in gruposPorSala)
-                            {
-                                <div class="mb-4">
-                                    <h6 class="fw-bold text-white border-bottom border-secondary pb-2 mb-3">
-                                        🎬 Sala @grupoSala.Key
-                                    </h6>
-
-                                    <div class="d-flex flex-wrap gap-2">
-                                        @foreach (var fn in grupoSala)
-                                        {
-                                            <a asp-controller="Venta"
-                                               asp-action="SeleccionarAsiento"
-                                               asp-route-idFuncion="@fn.IdFuncion"
-                                               class="btn rounded-pill px-4 py-2 pildora-horario shadow-sm">
-                                                @fn.FechaHora.ToString("HH:mm")
-                                            </a>
-                                        }
-                                    </div>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <div class="p-3 text-center rounded-3 text-white-50 border border-secondary">
-                                No hay funciones programadas para la fecha seleccionada (@fechaSel.ToString("dd/MM/yyyy")).
-                            </div>
-                        }
+                        <partial name="_Paso2SeleccionarHorario" model="Model" />
                     }
-
                 </div>
 
             </div>
@@ -215,18 +48,18 @@
 </div>
 
 <div id="datosPelicula"
-     data-idpelicula="@Model.IdPelicula"
-     data-idcine="@idCineSel"
-     data-ciudad="@ciudadSel"
+     data-idpelicula="@Model.Pelicula.IdPelicula"
+     data-idcine="@Model.IdCineSeleccionado"
+     data-ciudad="@Model.CiudadSeleccionada"
      style="display:none;"></div>
 
 @section Scripts {
     <script>
-                    function cambiarFecha(fechaStr) {
-                    const elData = document.getElementById('datosPelicula');
-                    const idPelicula = elData.dataset.idpelicula;
-                    const idCine = elData.dataset.idcine;
-                    const ciudad = elData.dataset.ciudad;
+        function cambiarFecha(fechaStr) {
+            const elData = document.getElementById('datosPelicula');
+            const idPelicula = elData.dataset.idpelicula;
+            const idCine = elData.dataset.idcine;
+            const ciudad = elData.dataset.ciudad;
             window.location.href = `/Cartelera/Detalle?id=${idPelicula}&idCine=${idCine}&ciudad=${encodeURIComponent(ciudad)}&fecha=${fechaStr}`;
         }
     </script>

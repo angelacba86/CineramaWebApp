@@ -6,95 +6,8 @@
     <title>@ViewData["Title"] - Cinerama</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
-    <style>
-            body {
-                display: flex;
-                flex-direction: column;
-                min-height: 100vh;
-                background-color: #212529;
-            }
-
-            .main-content {
-                flex: 1;
-            }
-
-            .navbar-brand {
-                font-size: 1.8rem;
-                letter-spacing: 2px;
-            }
-
-            footer {
-                background-color: #1a1a1a;
-                color: #ccc;
-            }
-
-                footer a {
-                    color: #ccc;
-                    text-decoration: none;
-                }
-
-                    footer a:hover {
-                        color: #dc3545;
-                    }
-
-            /* Contenedor de la Card de Película */
-            .movie-card {
-                position: relative;
-                overflow: hidden;
-                border-radius: 12px;
-                height: 420px;
-                background-color: #0a0a0a;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-
-                /* Elevación suave al pasar el mouse */
-                .movie-card:hover {
-                    transform: translateY(-6px);
-                    box-shadow: 0 10px 25px rgba(220, 53, 69, 0.5);
-                }
-
-                /* Imagen de fondo/póster */
-                .movie-card .card-img-poster {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    transition: transform 0.5s ease;
-                }
-
-                /* Zoom suave a la imagen al hacer hover */
-                .movie-card:hover .card-img-poster {
-                    transform: scale(1.08);
-                }
-
-                /* Bloque transparente oscuro superpuesto (Oculto por defecto) */
-                .movie-card .movie-overlay {
-                    position: absolute;
-                    inset: 0;
-                    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.8) 60%, rgba(0, 0, 0, 0.3) 100%);
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: flex-end;
-                    padding: 1.25rem;
-                    opacity: 0;
-                    transform: translateY(20px);
-                    transition: opacity 0.35s ease, transform 0.35s ease;
-                }
-
-                /* Mostrar detalle al colocar el cursor encima */
-                .movie-card:hover .movie-overlay {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-
-            /* Limitar la sinopsis a 2 líneas */
-            .text-truncate-2 {
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-    </style>
+    <link rel="stylesheet" href="~/css/cartelera.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
 
@@ -138,44 +51,31 @@
                 </form>
 
                 <script>
-                                    async function cargarCinesPorCiudad() {
-                                        const ciudad = document.getElementById('selectCiudad').value;
-                                        const comboCine = document.getElementById('selectCine');
+                    async function cargarCinesPorCiudad() {
+                        const ciudad = document.getElementById('selectCiudad').value;
+                        const comboCine = document.getElementById('selectCine');
 
-                                        comboCine.innerHTML = '<option value=""> Cargando cines...</option>';
+                        comboCine.innerHTML = '<option value="">Cargando cines...</option>';
 
-                                        try {
-                                            // Petición AJAX al backend
-                                            const response = await fetch(`/Cartelera/ObtenerCinesPorCiudad?ciudad=${encodeURIComponent(ciudad)}`);
-                                            const cines = await response.json();
+                        try {
+                            const response = await fetch(`/Cartelera/ObtenerCinesPorCiudad?ciudad=${encodeURIComponent(ciudad)}`);
+                            const cines = await response.json();
 
-                                            // Reconstruir opciones del combo de cines
-                                            comboCine.innerHTML = '<option value=""> Todos los Cines</option>';
-                                            cines.forEach(cine => {
-                                                const option = document.createElement('option');
-                                                option.value = cine.idCine || cine.IdCine;
-                                                option.textContent = cine.nombre || cine.Nombre;
-                                                comboCine.appendChild(option);
-                                            });
+                            comboCine.innerHTML = '<option value="">Todos los Cines</option>';
+                            cines.forEach(cine => {
+                                const option = document.createElement('option');
+                                option.value = cine.idCine || cine.IdCine;
+                                option.textContent = cine.nombre || cine.Nombre;
+                                comboCine.appendChild(option);
+                            });
 
-                                            // Enviar formulario para actualizar las películas de la cartelera
-                                            document.getElementById('formFiltros').submit();
-                                        } catch (error) {
-                                            console.error('Error al cargar cines:', error);
-                                            comboCine.innerHTML = '<option value="">Todos los Cines</option>';
-                                        }
-                                    }
+                            document.getElementById('formFiltros').submit();
+                        } catch (error) {
+                            console.error('Error al cargar cines:', error);
+                            comboCine.innerHTML = '<option value="">Todos los Cines</option>';
+                        }
+                    }
                 </script>
-
-                <script>
-                                    function cambiarCiudad() {
-                                        // Al cambiar de ciudad, reiniciamos el filtro de cine a 'Todos los cines'
-                                        document.getElementById('selectCine').value = '';
-                                        document.getElementById('formFiltros').submit();
-                                    }
-                </script>
-
-        
 
                 <div class="d-flex align-items-center">
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -190,7 +90,7 @@
                     else
                     {
                         <a asp-controller="Account" asp-action="Login" class="btn btn-danger btn-sm px-3 fw-bold">
-                             Iniciar Sesión
+                            Iniciar Sesión
                         </a>
                     }
                 </div>

@@ -1,0 +1,77 @@
+﻿@model CineramaWebApp.Models.ViewModels.DetallePeliculaViewModel
+@using System.Globalization
+
+@{
+    var cultureEs = new CultureInfo("es-ES");
+}
+
+<div class="mb-3">
+    <a asp-controller="Cartelera"
+       asp-action="Detalle"
+       asp-route-id="@Model.Pelicula.IdPelicula"
+       asp-route-idCine="0"
+       asp-route-ciudad="@Model.CiudadSeleccionada"
+       class="btn-cambiar-cine">
+        ← Cambiar Cine
+    </a>
+</div>
+
+<div class="p-0 mb-4 text-white">
+    <span class="text-white-50 small d-block">Cine Seleccionado:</span>
+    <h5 class="fw-bold text-white mb-0"> @(Model.CineActual?.Nombre ?? "Cinerama")</h5>
+</div>
+
+<div class="mb-4">
+    <label class="form-label text-white fw-bold mb-2"> Selecciona la Fecha de la Función:</label>
+    <select id="comboFecha" class="form-select bg-dark text-white border-secondary p-2 fw-semibold" onchange="cambiarFecha(this.value)">
+        @if (Model.FechasDisponibles != null)
+        {
+            foreach (DateTime f in Model.FechasDisponibles)
+            {
+                bool esHoy = f.Date == DateTime.Today;
+                bool esManana = f.Date == DateTime.Today.AddDays(1);
+                string textoFecha = esHoy ? $"Hoy - {f.ToString("dd/MM/yyyy")}" :
+                                    esManana ? $"Mañana - {f.ToString("dd/MM/yyyy")}" :
+                                    $"{f.ToString("dddd dd 'de' MMMM", cultureEs)} ({f.ToString("dd/MM/yyyy")})";
+
+                <option value="@f.ToString("yyyy-MM-dd")" selected="@(f.Date == Model.FechaSeleccionada.Date ? "selected" : null)">
+                    @textoFecha
+                </option>
+            }
+        }
+    </select>
+</div>
+
+<h6 class="fw-bold text-white mb-3"> Horarios Disponibles:</h6>
+
+@if (Model.Funciones != null && Model.Funciones.Any())
+{
+    var gruposPorSala = Model.Funciones.GroupBy(f => f.NumeroSala);
+
+    foreach (var grupoSala in gruposPorSala)
+    {
+        <div class="mb-4">
+            <h6 class="fw-bold text-white border-bottom border-secondary pb-2 mb-3">
+                🎬 Sala @grupoSala.Key
+            </h6>
+
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var fn in grupoSala)
+                {
+                    <a asp-controller="Venta"
+                       asp-action="SeleccionarAsiento"
+                       asp-route-idFuncion="@fn.IdFuncion"
+                       class="btn rounded-pill px-4 py-2 pildora-horario shadow-sm">
+                        @fn.FechaHora.ToString("HH:mm")
+                    </a>
+                }
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="p-3 text-center rounded-3 text-white-50 border border-secondary">
+        No hay funciones programadas para la fecha seleccionada (@Model.FechaSeleccionada.ToString("dd/MM/yyyy")).
+    </div>
+}

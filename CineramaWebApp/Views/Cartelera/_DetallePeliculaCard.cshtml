@@ -1,0 +1,17 @@
+﻿@model CineramaWebApp.Models.DTOs.PeliculaDTO
+
+<div class="card shadow-lg border-secondary bg-dark text-white rounded-3 overflow-hidden">
+    <img src="@(string.IsNullOrEmpty(Model.PosterUrl) ? Model.PosterUrl : Model.PosterUrl)"
+         class="card-img-top"
+         alt="@Model.Titulo"
+         style="height: 420px; object-fit: cover;"
+         onerror="this.src='https://placehold.co/300x450/1a1a1a/ffffff?text=Cinerama';">
+    <div class="card-body p-4">
+        <span class="badge bg-danger mb-2">@Model.Clasificacion</span>
+        <h3 class="fw-bold text-white mb-2">@Model.Titulo</h3>
+        <p class="text-secondary small mb-2">
+            🎭 @Model.Genero | ⏱️ @Model.DuracionMinutos min
+        </p>
+        <p class="small text-secondary mb-0">@Model.Sinopsis</p>
+    </div>
+</div>
