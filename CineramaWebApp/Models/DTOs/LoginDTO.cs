@@ -14,5 +14,6 @@
         public string Email { get; set; } = string.Empty;
         public string TipoUsuario { get; set; } = string.Empty;
         public int PuntosAcumulados { get; set; }
+        public DateTime FechaNacimiento { get; set; }
     }
 }

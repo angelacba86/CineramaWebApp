@@ -7,7 +7,7 @@
         <div class="col-md-8">
             <div class="card bg-dark text-white shadow-lg border-secondary">
                 <div class="card-header bg-danger text-white text-center py-3">
-                    <h3 class="mb-0 fw-bold">PAGO SIMULADO</h3>
+                    <h3 class="mb-0 fw-bold">Realiza tu compra</h3>
                 </div>
                 <div class="card-body p-4">
                     
@@ -49,7 +49,7 @@
                         </div>
 
                         <div class="tab-pane fade text-center py-3" id="yape" role="tabpanel">
-                            <p class="mb-2">Escanea el código QR para realizar la simulación:</p>
+                            <p class="mb-2">Escanea el código QR para realizar el pago:</p>
                             <div class="bg-white p-3 d-inline-block rounded mb-3">
                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CineramaPagoSimulado" alt="QR Pago" class="img-fluid" />
                             </div>
@@ -86,6 +86,28 @@
 </div>
 
 <script>
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+    // 1. Mostrar el monto total guardado
+    const total = sessionStorage.getItem("montoTotal") || "0.00";
+    document.getElementById("lblTotalPagar").textContent = "S/ " + parseFloat(total).toFixed(2);
+
+    // 2. Validar tipo de usuario (Ocultar pestaña de Puntos si es Invitado)
+    const tipoUsuario = sessionStorage.getItem("tipoUsuario") || "Invitado";
+    const tabPuntos = document.getElementById("puntos-tab");
+    const containerPuntos = tabPuntos ? tabPuntos.closest("li") : null;
+
+    if (tipoUsuario === "Invitado" && containerPuntos) {
+        // Ocultar la pestaña/botón de Puntos
+        containerPuntos.style.display = "none";
+        
+        // Si la pestaña activa por defecto fuera puntos, la cambiamos a tarjeta
+        const tarjetaTab = document.getElementById("tarjeta-tab");
+        if (tarjetaTab) tarjetaTab.click();
+    }
+});
+
     document.addEventListener("DOMContentLoaded", function () {
         const total = sessionStorage.getItem("montoTotal") || "0.00";
         document.getElementById("lblTotalPagar").textContent = "S/ " + parseFloat(total).toFixed(2);

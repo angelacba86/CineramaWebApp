@@ -19,7 +19,7 @@ namespace CineramaWebApp.Services
             return await _usuarioRepository.AutenticarUsuarioAsync(loginDto.Email, loginDto.Password);
         }
 
-        public async Task<int> RegistrarClienteAsync(string nombre, string apellido, string email, string password, string? telefono)
+        public async Task<int> RegistrarClienteAsync(string nombre, string apellido, string email, string password, string? telefono, DateTime fechaNacimiento)
         {
             var usuario = new Usuario
             {
@@ -27,7 +27,8 @@ namespace CineramaWebApp.Services
                 Apellido = apellido,
                 Email = email,
                 PasswordHash = password,
-                Telefono = telefono
+                Telefono = telefono,
+                FechaNacimiento = fechaNacimiento
             };
 
             return await _usuarioRepository.RegistrarUsuarioClienteAsync(usuario);

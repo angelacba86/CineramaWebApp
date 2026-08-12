@@ -57,9 +57,19 @@ namespace CineramaWebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Registrar([FromBody] RegistroDTO dto)
         {
+            if (!ModelState.IsValid)
+                return Json(new { exito = false, mensaje = "Datos de registro inválidos." });
+
             try
             {
-                int idNuevo = await _authService.RegistrarClienteAsync(dto.Nombre, dto.Apellido, dto.Email, dto.Password, dto.Telefono);
+                int idNuevo = await _authService.RegistrarClienteAsync(
+                    dto.Nombre,
+                    dto.Apellido,
+                    dto.Email,
+                    dto.Password,
+                    dto.Telefono,
+                    dto.FechaNacimiento);
+
                 return Json(new { exito = true, mensaje = "Registro completado exitosamente.", idUsuario = idNuevo });
             }
             catch (Exception ex)
@@ -84,5 +94,6 @@ namespace CineramaWebApp.Controllers
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string? Telefono { get; set; }
+        public DateTime FechaNacimiento { get; set; } // 👈 nuevo, requerido por sp_RegistrarUsuarioCliente
     }
 }

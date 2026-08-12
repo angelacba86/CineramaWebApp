@@ -128,6 +128,13 @@ namespace CineramaWebApp.Controllers
             ViewBag.UrlPdf = urlPdf;
             return View();
         }
+
+        // GET: /Venta/Identificacion
+        [HttpGet]
+        public IActionResult Identificacion()
+        {
+            return View();
+        }
     }
 
 }
