@@ -16,15 +16,21 @@ namespace CineramaWebApp.Controllers
 
         // GET: /Cartelera/Index
         [HttpGet]
-        public async Task<IActionResult> Index(int? idCine, DateTime? fecha)
+        public async Task<IActionResult> Index(int? idCine, string? ciudad)
         {
-            // Listar cines para el selector superior
-            var cines = await _cineRepository.ListarCinesAsync();
+            // 1. Cargar la lista completa de ciudades
+            var ciudades = await _cineRepository.ListarCiudadesAsync();
+
+            // 2. Cargar SOLO los cines de la ciudad seleccionada (si ciudad es null o vacio, trae todos)
+            var cines = await _cineRepository.ListarCinesAsync(ciudad);
+
+            ViewBag.Ciudades = ciudades;
             ViewBag.Cines = cines;
+            ViewBag.CiudadSeleccionada = ciudad;
             ViewBag.IdCineSeleccionado = idCine;
 
-            // Listar cartelera según filtros
-            var cartelera = await _carteleraRepository.ListarCarteleraPorCineAsync(idCine, fecha);
+            // 3. Cargar las películas que coincidan con la búsqueda
+            var cartelera = await _carteleraRepository.ListarCarteleraPorCineAsync(idCine, ciudad);
             return View(cartelera);
         }
 
@@ -42,6 +48,14 @@ namespace CineramaWebApp.Controllers
             ViewBag.Funciones = funciones;
 
             return View(pelicula);
+        }
+
+        // GET: /Cartelera/ObtenerCinesPorCiudad?ciudad=Lima
+        [HttpGet]
+        public async Task<IActionResult> ObtenerCinesPorCiudad(string? ciudad)
+        {
+            var cines = await _cineRepository.ListarCinesAsync(ciudad);
+            return Json(cines);
         }
     }
 }

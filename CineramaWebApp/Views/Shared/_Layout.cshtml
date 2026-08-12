@@ -1,50 +1,233 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CineramaWebApp</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/CineramaWebApp.styles.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - Cinerama</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+                background-color: #212529;
+            }
+
+            .main-content {
+                flex: 1;
+            }
+
+            .navbar-brand {
+                font-size: 1.8rem;
+                letter-spacing: 2px;
+            }
+
+            footer {
+                background-color: #1a1a1a;
+                color: #ccc;
+            }
+
+                footer a {
+                    color: #ccc;
+                    text-decoration: none;
+                }
+
+                    footer a:hover {
+                        color: #dc3545;
+                    }
+
+            /* Contenedor de la Card de Película */
+            .movie-card {
+                position: relative;
+                overflow: hidden;
+                border-radius: 12px;
+                height: 420px;
+                background-color: #0a0a0a;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+                /* Elevación suave al pasar el mouse */
+                .movie-card:hover {
+                    transform: translateY(-6px);
+                    box-shadow: 0 10px 25px rgba(220, 53, 69, 0.5);
+                }
+
+                /* Imagen de fondo/póster */
+                .movie-card .card-img-poster {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    transition: transform 0.5s ease;
+                }
+
+                /* Zoom suave a la imagen al hacer hover */
+                .movie-card:hover .card-img-poster {
+                    transform: scale(1.08);
+                }
+
+                /* Bloque transparente oscuro superpuesto (Oculto por defecto) */
+                .movie-card .movie-overlay {
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.8) 60%, rgba(0, 0, 0, 0.3) 100%);
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-end;
+                    padding: 1.25rem;
+                    opacity: 0;
+                    transform: translateY(20px);
+                    transition: opacity 0.35s ease, transform 0.35s ease;
+                }
+
+                /* Mostrar detalle al colocar el cursor encima */
+                .movie-card:hover .movie-overlay {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+
+            /* Limitar la sinopsis a 2 líneas */
+            .text-truncate-2 {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CineramaWebApp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold text-danger" asp-controller="Cartelera" asp-action="Index">
+                🎬 CINERAMA
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContenido">
+                <form method="get" asp-controller="Cartelera" asp-action="Index" id="formFiltros" class="d-flex mx-auto my-2 my-lg-0 gap-2 align-items-center">
+
+                    <select name="ciudad" id="selectCiudad" class="form-select form-select-sm bg-dark text-white border-secondary" onchange="cargarCinesPorCiudad()">
+                        <option value="">Todas las Ciudades</option>
+                        @if (ViewBag.Ciudades != null)
+                        {
+                            foreach (var c in ViewBag.Ciudades)
+                            {
+                                var selected = ViewBag.CiudadSeleccionada == c ? "selected" : null;
+                                <!option value="@c" @selected>@c</!option>
+                            }
+                        }
+                    </select>
+
+                    <select name="idCine" id="selectCine" class="form-select form-select-sm bg-dark text-white border-secondary" onchange="document.getElementById('formFiltros').submit()">
+                        <option value="">Todos los Cines</option>
+                        @if (ViewBag.Cines != null)
+                        {
+                            foreach (var cine in ViewBag.Cines)
+                            {
+                                var selected = ViewBag.IdCineSeleccionado == cine.IdCine ? "selected" : null;
+                                <!option value="@cine.IdCine" @selected>@cine.Nombre</!option>
+                            }
+                        }
+                    </select>
+
+                </form>
+
+                <script>
+                                    async function cargarCinesPorCiudad() {
+                                        const ciudad = document.getElementById('selectCiudad').value;
+                                        const comboCine = document.getElementById('selectCine');
+
+                                        comboCine.innerHTML = '<option value=""> Cargando cines...</option>';
+
+                                        try {
+                                            // Petición AJAX al backend
+                                            const response = await fetch(`/Cartelera/ObtenerCinesPorCiudad?ciudad=${encodeURIComponent(ciudad)}`);
+                                            const cines = await response.json();
+
+                                            // Reconstruir opciones del combo de cines
+                                            comboCine.innerHTML = '<option value=""> Todos los Cines</option>';
+                                            cines.forEach(cine => {
+                                                const option = document.createElement('option');
+                                                option.value = cine.idCine || cine.IdCine;
+                                                option.textContent = cine.nombre || cine.Nombre;
+                                                comboCine.appendChild(option);
+                                            });
+
+                                            // Enviar formulario para actualizar las películas de la cartelera
+                                            document.getElementById('formFiltros').submit();
+                                        } catch (error) {
+                                            console.error('Error al cargar cines:', error);
+                                            comboCine.innerHTML = '<option value="">Todos los Cines</option>';
+                                        }
+                                    }
+                </script>
+
+                <script>
+                                    function cambiarCiudad() {
+                                        // Al cambiar de ciudad, reiniciamos el filtro de cine a 'Todos los cines'
+                                        document.getElementById('selectCine').value = '';
+                                        document.getElementById('formFiltros').submit();
+                                    }
+                </script>
+
+        
+
+                <div class="d-flex align-items-center">
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <a asp-controller="Cuenta" asp-action="MiCuenta" class="btn btn-outline-light btn-sm me-2">
+                            👤 Mi Cuenta (@User.Identity.Name)
+                        </a>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">Salir</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-danger btn-sm px-3 fw-bold">
+                             Iniciar Sesión
+                        </a>
+                    }
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+        </div>
+    </nav>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - CineramaWebApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <main class="main-content">
+        @RenderBody()
+    </main>
+
+    <footer class="pt-4 pb-3 mt-5 border-top border-secondary">
+        <div class="container text-center">
+            <div class="d-flex justify-content-center flex-wrap gap-4 mb-3 fw-semibold">
+                <a href="#sobre-nosotros">Sobre Nosotros</a>
+                <span class="text-secondary">|</span>
+                <a href="#oficinas">Oficinas</a>
+                <span class="text-secondary">|</span>
+                <a href="#contacto">Contacto</a>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3 fs-4 mb-3">
+                <a href="#" class="text-white"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="text-white"><i class="bi bi-instagram"></i></a>
+                <a href="#" class="text-white"><i class="bi bi-tiktok"></i></a>
+                <a href="#" class="text-white"><i class="bi bi-youtube"></i></a>
+            </div>
+
+            <hr class="border-secondary mx-auto w-50" />
+
+            <p class="small mb-0 text-secondary">
+                © @DateTime.Now.Year CINERAMA Perú. Todos los derechos reservados.
+            </p>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
