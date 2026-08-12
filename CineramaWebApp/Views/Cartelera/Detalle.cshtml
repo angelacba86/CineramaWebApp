@@ -1,220 +1,233 @@
 ﻿@model CineramaWebApp.Models.DTOs.PeliculaDTO
+@using System.Globalization
 
 @{
     ViewData["Title"] = Model.Titulo + " - Cinerama";
+    int idCineSel = ViewBag.IdCineSeleccionado ?? 0;
+    string ciudadSel = ViewBag.CiudadSeleccionada ?? "";
+    DateTime fechaSel = ViewBag.FechaSeleccionada ?? DateTime.Today;
+    var cultureEs = new CultureInfo("es-ES");
 }
 
 <style>
-    .asiento {
-        width: 40px;
-        height: 40px;
-        margin: 4px;
-        border-radius: 6px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 12px;
-        user-select: none;
+    /* Cards de Selección de Cine (Transparentes y se oscurecen al hover) */
+    .card-cine-select {
+        background-color: transparent !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        text-decoration: none !important;
     }
 
-    .asiento-libre {
-        background-color: #28a745;
-        color: white;
-    }
+        .card-cine-select:hover {
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            transform: translateY(-2px);
+        }
 
-    .asiento-ocupado {
-        background-color: #dc3545;
-        color: white;
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
-
-    .asiento-seleccionado {
-        background-color: #ffc107;
-        color: black;
-    }
-
-    .pantalla-cine {
-        background: #333;
-        color: #fff;
-        text-align: center;
-        padding: 8px;
-        margin-bottom: 20px;
-        border-radius: 4px;
-        letter-spacing: 4px;
+    /* Píldoras de Horarios completamente rojas sin precio */
+    .pildora-horario {
+        background-color: #dc3545 !important;
+        color: #ffffff !important;
+        border: none !important;
+        transition: transform 0.2s ease, background-color 0.2s ease;
+        text-decoration: none !important;
         font-weight: bold;
     }
+
+        .pildora-horario:hover {
+            background-color: #bb2d3b !important;
+            color: #ffffff !important;
+            transform: scale(1.05);
+        }
+
+    /* Botón sutil 'Cambiar Cine' (Solo texto, sin bordes ni fondo de botón) */
+    .btn-cambiar-cine {
+        color: #ffffff !important;
+        text-decoration: none !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.25rem !important;
+        transition: color 0.2s ease !important;
+        box-shadow: none !important;
+    }
+
+        .btn-cambiar-cine:hover {
+            color: #adb5bd !important; /* Pasa de blanco a gris claro */
+            text-decoration: underline !important;
+        }
 </style>
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="row">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0">
-                <img src="@Model.ImagenUrl" class="card-img-top" alt="@Model.Titulo" onerror="this.src='https://via.placeholder.com/300x450?text=Cinerama';">
-                <div class="card-body">
-                    <h3 class="fw-bold">@Model.Titulo</h3>
-                    <p class="text-muted mb-1"><strong>Clasificación:</strong> @Model.Clasificacion | <strong>Duración:</strong> @Model.DuracionMinutos min</p>
-                    <p class="text-muted"><strong>Género:</strong> @Model.Genero</p>
-                    <p class="small">@Model.Sinopsis</p>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-lg border-secondary bg-dark text-white rounded-3 overflow-hidden">
+                <img src="@(string.IsNullOrEmpty(Model.PosterUrl) ? Model.PosterUrl : Model.PosterUrl)" class="card-img-top" alt="@Model.Titulo" style="height: 420px; object-fit: cover;" onerror="this.src='https://placehold.co/300x450/1a1a1a/ffffff?text=Cinerama';">
+                <div class="card-body p-4">
+                    <span class="badge bg-danger mb-2">@Model.Clasificacion</span>
+                    <h3 class="fw-bold text-white mb-2">@Model.Titulo</h3>
+                    <p class="text-secondary small mb-2">
+                        🎭 @Model.Genero | ⏱️ @Model.DuracionMinutos min
+                    </p>
+                    <p class="small text-secondary mb-0">@Model.Sinopsis</p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-8">
-            <div class="card shadow-sm border-0 p-4">
-                <h4 class="fw-bold text-danger mb-3">1. Selecciona tu Función</h4>
-                <div class="row g-2 mb-4">
-                    @if (ViewBag.Funciones != null)
+            <div class="card shadow-lg border-secondary bg-dark text-white rounded-3 overflow-hidden">
+
+                <div class="bg-danger text-white p-3 d-flex justify-content-between align-items-center">
+                    <h4 class="fw-bold mb-0 text-white">
+                        @(idCineSel == 0 ? "1. Elige tu cine" : "2. Selecciona Horario")
+                    </h4>
+
+                    <a asp-controller="Cartelera"
+                       asp-action="Index"
+                       asp-route-idCine="@idCineSel"
+                       asp-route-ciudad="@ciudadSel"
+                       class="btn btn-link text-white text-decoration-none fs-4 fw-bold p-0 lh-1"
+                       title="Volver a la cartelera principal">
+                        ✕
+                    </a>
+                </div>
+
+                <div class="p-4">
+
+                    @if (idCineSel == 0)
                     {
-                        foreach (var fn in ViewBag.Funciones)
+                        <p class="text-white-50 mb-3">Selecciona el cine de tu preferencia para consultar los horarios disponibles:</p>
+
+                        <div class="row g-3 mb-3">
+                            @if (ViewBag.CinesDisponibles != null && ((IEnumerable<dynamic>)ViewBag.CinesDisponibles).Any())
+                            {
+                                foreach (var cine in ViewBag.CinesDisponibles)
+                                {
+                                    <div class="col-md-6">
+                                        <a asp-controller="Cartelera"
+                                           asp-action="Detalle"
+                                           asp-route-id="@Model.IdPelicula"
+                                           asp-route-idCine="@cine.IdCine"
+                                           asp-route-ciudad="@ciudadSel"
+                                           class="card card-cine-select text-white p-3 rounded-3 d-block h-100">
+                                            <div>
+                                                <h5 class="fw-bold text-white mb-1">@cine.Nombre</h5>
+                                                <p class="small text-white-50 mb-0">📍 @cine.Ciudad - @cine.Direccion</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12">
+                                    <div class="p-4 text-center border border-secondary rounded-3 text-white-50">
+                                        No hay cines disponibles con funciones activas para esta película.
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (idCineSel > 0)
+                    {
+                        <div class="mb-3">
+                            <a asp-controller="Cartelera"
+                               asp-action="Detalle"
+                               asp-route-id="@Model.IdPelicula"
+                               asp-route-idCine="0"
+                               asp-route-ciudad="@ciudadSel"
+                               class="btn-cambiar-cine">
+                                ← Cambiar Cine
+                            </a>
+                        </div>
+
+                        <div class="p-0 mb-4 text-white">
+                            <span class="text-white-50 small d-block">Cine Seleccionado:</span>
+                            <h5 class="fw-bold text-white mb-0">@(ViewBag.CineActual?.Nombre ?? "Cinerama")</h5>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-white fw-bold mb-2">Selecciona la Fecha de la Función:</label>
+                            <select id="comboFecha" class="form-select bg-dark text-white border-secondary p-2 fw-semibold" onchange="cambiarFecha(this.value)">
+                                @if (ViewBag.FechasDisponibles != null)
+                                {
+                                    foreach (DateTime f in ViewBag.FechasDisponibles)
+                                    {
+                                        bool esHoy = f.Date == DateTime.Today;
+                                        bool esManana = f.Date == DateTime.Today.AddDays(1);
+                                        string textoFecha = esHoy ? $"Hoy - {f.ToString("dd/MM/yyyy")}" :
+                                                            esManana ? $"Mañana - {f.ToString("dd/MM/yyyy")}" :
+                                                            $"{f.ToString("dddd dd 'de' MMMM", cultureEs)} ({f.ToString("dd/MM/yyyy")})";
+
+                                        <option value="@f.ToString("yyyy-MM-dd")" selected="@(f.Date == fechaSel.Date ? "selected" : null)">
+                                            @textoFecha
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <h6 class="fw-bold text-white mb-3">Horarios Disponibles:</h6>
+
+                        @if (ViewBag.Funciones != null && ((IEnumerable<dynamic>)ViewBag.Funciones).Any())
                         {
-                            <div class="col-md-6">
-                                <button type="button" class="btn btn-outline-danger w-100 btn-funcion" data-id="@fn.IdFuncion" onclick="cargarMapaAsientos(@fn.IdFuncion, this)">
-                                    📅 @fn.FechaHora.ToString("dd/MM/yyyy HH:mm") - S/ @fn.PrecioUnitario.ToString("F2")
-                                </button>
+                            var funcionesLista = (IEnumerable<dynamic>)ViewBag.Funciones;
+                            var gruposPorSala = funcionesLista.GroupBy(f => f.NumeroSala);
+
+                            foreach (var grupoSala in gruposPorSala)
+                            {
+                                <div class="mb-4">
+                                    <h6 class="fw-bold text-white border-bottom border-secondary pb-2 mb-3">
+                                        🎬 Sala @grupoSala.Key
+                                    </h6>
+
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach (var fn in grupoSala)
+                                        {
+                                            <a asp-controller="Venta"
+                                               asp-action="SeleccionarAsiento"
+                                               asp-route-idFuncion="@fn.IdFuncion"
+                                               class="btn rounded-pill px-4 py-2 pildora-horario shadow-sm">
+                                                @fn.FechaHora.ToString("HH:mm")
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="p-3 text-center rounded-3 text-white-50 border border-secondary">
+                                No hay funciones programadas para la fecha seleccionada (@fechaSel.ToString("dd/MM/yyyy")).
                             </div>
                         }
                     }
-                    else
-                    {
-                        <p class="text-muted">No hay funciones disponibles en este momento.</p>
-                    }
+
                 </div>
 
-                <hr />
-
-                <div id="seccionAsientos" style="display:none;">
-                    <h4 class="fw-bold text-danger mb-3">2. Selecciona tus Asientos</h4>
-                    <div class="pantalla-cine">🎭 PANTALLA</div>
-
-                    <div id="contenedorAsientos" class="text-center mb-4">
-                    </div>
-
-                    <div class="bg-light p-3 rounded d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <p class="mb-0"><strong>Asientos seleccionados:</strong> <span id="lblAsientos">-</span></p>
-                            <p class="mb-0"><strong>Total a pagar:</strong> S/ <span id="lblTotal">0.00</span></p>
-                        </div>
-                        <button id="btnComprar" type="button" class="btn btn-success btn-lg" onclick="procesarCompra()" disabled>
-                            💳 Finalizar Compra
-                        </button>
-                    </div>
-
-                    <div id="mensajeAlerta" class="alert d-none" role="alert"></div>
-                </div>
             </div>
         </div>
     </div>
 </div>
 
+<div id="datosPelicula"
+     data-idpelicula="@Model.IdPelicula"
+     data-idcine="@idCineSel"
+     data-ciudad="@ciudadSel"
+     style="display:none;"></div>
+
 @section Scripts {
     <script>
-        let funcionSeleccionada = 0;
-        let asientosSeleccionados = [];
-
-        // 1. Cargar Mapa de Asientos vía AJAX
-        async function cargarMapaAsientos(idFuncion, elemento) {
-            funcionSeleccionada = idFuncion;
-            asientosSeleccionados = [];
-            actualizarResumen();
-
-            // Resaltar botón activo
-            document.querySelectorAll('.btn-funcion').forEach(b => b.classList.remove('active', 'btn-danger'));
-            document.querySelectorAll('.btn-funcion').forEach(b => b.classList.add('btn-outline-danger'));
-            elemento.classList.remove('btn-outline-danger');
-            elemento.classList.add('btn-danger', 'active');
-
-            const contenedor = document.getElementById('contenedorAsientos');
-            contenedor.innerHTML = '<div class="spinner-border text-danger" role="status"></div>';
-            document.getElementById('seccionAsientos').style.display = 'block';
-
-            try {
-                const response = await fetch(`/Venta/MapaAsientos?idFuncion=${idFuncion}`);
-                const asientos = await response.json();
-
-                contenedor.innerHTML = '';
-                asientos.forEach(a => {
-                    const div = document.createElement('div');
-                    const estaOcupado = a.ocupado === 1 || a.disponible === 0;
-
-                    div.className = `asiento ${estaOcupado ? 'asiento-ocupado' : 'asiento-libre'}`;
-                    div.innerText = `${a.fila || ''}${a.numero || a.idAsiento}`;
-                    div.dataset.id = a.idAsiento;
-
-                    if (!estaOcupado) {
-                        div.onclick = () => alternarAsiento(div, a.idAsiento);
-                    }
-
-                    contenedor.appendChild(div);
-                });
-            } catch (error) {
-                contenedor.innerHTML = '<p class="text-danger">Error al cargar el mapa de asientos.</p>';
-            }
-        }
-
-        // 2. Selección de Asientos
-        function alternarAsiento(div, idAsiento) {
-            if (div.classList.contains('asiento-seleccionado')) {
-                div.classList.remove('asiento-seleccionado');
-                div.classList.add('asiento-libre');
-                asientosSeleccionados = asientosSeleccionados.filter(id => id !== idAsiento);
-            } else {
-                div.classList.remove('asiento-libre');
-                div.classList.add('asiento-seleccionado');
-                asientosSeleccionados.push(idAsiento);
-            }
-            actualizarResumen();
-        }
-
-        function actualizarResumen() {
-            document.getElementById('lblAsientos').innerText = asientosSeleccionados.length > 0 ? asientosSeleccionados.join(', ') : '-';
-            const total = asientosSeleccionados.length * 15.00;
-            document.getElementById('lblTotal').innerText = total.toFixed(2);
-            document.getElementById('btnComprar').disabled = asientosSeleccionados.length === 0;
-        }
-
-        // 3. Enviar Compra a la API vía AJAX
-        async function procesarCompra() {
-            if (asientosSeleccionados.length === 0) return;
-
-            const btn = document.getElementById('btnComprar');
-            btn.disabled = true;
-            btn.innerText = 'Procesando...';
-
-            const payload = {
-                idFuncion: funcionSeleccionada,
-                idUsuario: 1, // Si inició sesión el controller usará su ID de cookie
-                listaAsientos: asientosSeleccionados
-            };
-
-            try {
-                const res = await fetch('/Venta/ProcesarCompra', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await res.json();
-                const alerta = document.getElementById('mensajeAlerta');
-                alerta.classList.remove('d-none', 'alert-success', 'alert-danger');
-
-                if (data.exito) {
-                    alerta.classList.add('alert-success');
-                    alerta.innerHTML = `<strong>¡Éxito!</strong> ${data.mensaje} <br/> <a href="${data.urlPdf}" target="_blank" class="btn btn-sm btn-dark mt-2">📥 Descargar Boleto PDF</a>`;
-                    // Recargar asientos para marcar como ocupados
-                    cargarMapaAsientos(funcionSeleccionada, document.querySelector('.btn-funcion.active'));
-                } else {
-                    alerta.classList.add('alert-danger');
-                    alerta.innerText = data.mensaje;
-                }
-            } catch (e) {
-                alert('Ocurrió un error al procesar la transacción.');
-            } finally {
-                btn.disabled = false;
-                btn.innerText = '💳 Finalizar Compra';
-            }
+                    function cambiarFecha(fechaStr) {
+                    const elData = document.getElementById('datosPelicula');
+                    const idPelicula = elData.dataset.idpelicula;
+                    const idCine = elData.dataset.idcine;
+                    const ciudad = elData.dataset.ciudad;
+            window.location.href = `/Cartelera/Detalle?id=${idPelicula}&idCine=${idCine}&ciudad=${encodeURIComponent(ciudad)}&fecha=${fechaStr}`;
         }
     </script>
 }

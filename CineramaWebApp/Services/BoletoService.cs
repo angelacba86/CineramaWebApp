@@ -26,7 +26,7 @@ namespace CineramaWebApp.Services
             List<string> asientos,
             decimal montoTotal)
         {
-            // Carpeta destino dentro de wwwroot/boletos
+            // 1. Carpeta destino dentro de wwwroot/boletos
             string folderPath = Path.Combine(_env.WebRootPath, "boletos");
             if (!Directory.Exists(folderPath))
             {
@@ -36,8 +36,8 @@ namespace CineramaWebApp.Services
             string fileName = $"ticket_{idVenta}_{Guid.NewGuid():N}.pdf";
             string filePath = Path.Combine(folderPath, fileName);
 
-            // Generación del PDF con QuestPDF
-            Document.Create(container =>
+            // 2. Construcción de la estructura del documento QuestPDF
+            var doc = Document.Create(container =>
             {
                 container.Page(page =>
                 {
@@ -75,7 +75,13 @@ namespace CineramaWebApp.Services
                         .Text("¡Gracias por su compra! Presente este boleto en la entrada.")
                         .FontSize(8).Italic();
                 });
-            }).GeneratePdf(filePath);
+            });
+
+            // 3. CAMBIO CLAVE: Usar FileStream con 'using' para asegurar que el archivo SE CIERRE inmediatamente
+            using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                doc.GeneratePdf(stream);
+            }
 
             await Task.CompletedTask;
 

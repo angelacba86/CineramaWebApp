@@ -8,6 +8,6 @@
     public int DuracionMinutos { get; set; }
     public string Clasificacion { get; set; } = string.Empty;
     public string Genero { get; set; } = string.Empty;
-    public string ImagenUrl { get; set; } = string.Empty;
+    public string PosterUrl { get; set; } = string.Empty;
 }
 }

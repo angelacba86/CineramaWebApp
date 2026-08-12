@@ -1,7 +1,8 @@
-﻿using System.Data;
-using CineramaWebApp.Models.DTOs;
+﻿using CineramaWebApp.Models.DTOs;
+using CineramaWebApp.Models.Entities;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace CineramaWebApp.Repositories
 {
@@ -20,6 +21,15 @@ namespace CineramaWebApp.Repositories
             return await connection.QueryAsync<CarteleraDTO>(
                 "sp_ListarCarteleraPorCine",
                 new { idCine, ciudad },
+                commandType: CommandType.StoredProcedure);
+        }
+
+        public async Task<IEnumerable<Cine>> ObtenerCinesPorPeliculaAsync(int idPelicula)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            return await connection.QueryAsync<Cine>(
+                "sp_ObtenerCinesPorPelicula",
+                new { idPelicula },
                 commandType: CommandType.StoredProcedure);
         }
 

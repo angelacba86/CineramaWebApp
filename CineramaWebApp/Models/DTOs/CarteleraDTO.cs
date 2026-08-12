@@ -14,8 +14,13 @@
     public class FuncionDisponibleDTO
     {
         public int IdFuncion { get; set; }
+        public int IdPelicula { get; set; }
+        public int IdSala { get; set; }
+        public string NumeroSala { get; set; } = string.Empty;
+        public int Aforo { get; set; }
+        public int IdCine { get; set; }
+        public string NombreCine { get; set; } = string.Empty;
         public DateTime FechaHora { get; set; }
         public decimal PrecioUnitario { get; set; }
-        public int NumeroSala { get; set; }
     }
 }

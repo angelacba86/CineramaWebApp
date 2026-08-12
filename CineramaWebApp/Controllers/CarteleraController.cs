@@ -33,10 +33,9 @@ namespace CineramaWebApp.Controllers
             var cartelera = await _carteleraRepository.ListarCarteleraPorCineAsync(idCine, ciudad);
             return View(cartelera);
         }
-
-        // GET: /Cartelera/Detalle/1
+        // GET: /Cartelera/Detalle/1?idCine=2&ciudad=Lima&fecha=2026-08-12
         [HttpGet]
-        public async Task<IActionResult> Detalle(int id, int idCine = 0)
+        public async Task<IActionResult> Detalle(int id, int idCine = 0, string? ciudad = null, DateTime? fecha = null)
         {
             var pelicula = await _carteleraRepository.ObtenerDetallePeliculaAsync(id);
             if (pelicula == null)
@@ -44,8 +43,44 @@ namespace CineramaWebApp.Controllers
                 return RedirectToAction("Index");
             }
 
-            var funciones = await _carteleraRepository.ObtenerFuncionesPorPeliculaAsync(id, idCine);
+            ViewBag.IdCineSeleccionado = idCine;
+            ViewBag.CiudadSeleccionada = ciudad;
+
+            // --- PASO 1: SELECCIONAR CINE (Si no se especificó un cine) ---
+            if (idCine == 0)
+            {
+                var cinesDisponibles = await _carteleraRepository.ObtenerCinesPorPeliculaAsync(id);
+                ViewBag.CinesDisponibles = cinesDisponibles;
+                return View(pelicula);
+            }
+
+            // --- PASO 2: CÁLCULO DINÁMICO DE FECHAS (HOY HASTA EL PRÓXIMO MIÉRCOLES) ---
+            DateTime hoy = DateTime.Today;
+
+            // Calculamos cuántos días faltan desde hoy hasta el próximo miércoles
+            int diasHastaMiercoles = ((int)DayOfWeek.Wednesday - (int)hoy.DayOfWeek + 7) % 7;
+
+            // Generamos las fechas desde hoy hasta el miércoles de la semana cinematográfica actual
+            var fechasDisponibles = Enumerable.Range(0, diasHastaMiercoles + 1)
+                .Select(i => hoy.AddDays(i))
+                .ToList();
+
+            // Validamos que la fecha seleccionada esté dentro del rango permitido; si no, usaremos 'hoy'
+            DateTime fechaSeleccionada = fecha ?? hoy;
+            if (!fechasDisponibles.Any(f => f.Date == fechaSeleccionada.Date))
+            {
+                fechaSeleccionada = hoy;
+            }
+
+            // Obtener funciones del cine y fecha seleccionada
+            var funciones = await _carteleraRepository.ObtenerFuncionesPorPeliculaAsync(id, idCine, fechaSeleccionada);
+            var cines = await _carteleraRepository.ObtenerCinesPorPeliculaAsync(id);
+            var cineActual = cines.FirstOrDefault(c => c.IdCine == idCine);
+
+            ViewBag.CineActual = cineActual;
             ViewBag.Funciones = funciones;
+            ViewBag.FechasDisponibles = fechasDisponibles;
+            ViewBag.FechaSeleccionada = fechaSeleccionada;
 
             return View(pelicula);
         }
@@ -57,5 +92,7 @@ namespace CineramaWebApp.Controllers
             var cines = await _cineRepository.ListarCinesAsync(ciudad);
             return Json(cines);
         }
+
+
     }
 }

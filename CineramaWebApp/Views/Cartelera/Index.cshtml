@@ -66,6 +66,8 @@
                             <a asp-controller="Cartelera"
                                asp-action="Detalle"
                                asp-route-id="@pelicula.IdPelicula"
+                               asp-route-idCine="@ViewBag.IdCineSeleccionado"
+                               asp-route-ciudad="@ViewBag.CiudadSeleccionada"
                                class="btn btn-danger btn-sm w-100 fw-bold shadow-sm">
                                 🎟️ Ver Funciones
                             </a>
@@ -146,7 +148,7 @@
                         🎭 Suspense / Ciencia Ficción | ⏱️ 90 min
                     </p>
                     <p class="text-secondary small text-truncate-2 mb-3">
-                        Raccoon City cae en una noche de puro terror y asfixiante supervivencia zombi.
+                       Raccoon City cae en una noche de puro terror y asfixiante supervivencia zombi.
                     </p>
                     <button class="btn btn-outline-light btn-sm w-100 fw-bold disabled opacity-75">
                         📅 Próximo Mes
