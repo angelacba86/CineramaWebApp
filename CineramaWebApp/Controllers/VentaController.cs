@@ -22,7 +22,18 @@ namespace CineramaWebApp.Controllers
             _carteleraRepository = carteleraRepository;
         }
 
-        // GET: /Venta/MapaAsientos?idFuncion=1
+        // =========================================================================
+        // ACCIÓN PARA CARGAR LA VISTA DE LA CARD 13 (SELECCIÓN DE ASIENTOS)
+        // GET: /Venta/SeleccionarAsientos?idFuncion=1
+        // =========================================================================
+        [HttpGet]
+        public IActionResult SeleccionarAsientos(int idFuncion = 1)
+        {
+            ViewBag.IdFuncion = idFuncion;
+            return View();
+        }
+
+        // GET: /Venta/MapaAsientos?idFuncion=1 (Consumido mediante fetch por JavaScript)
         [HttpGet]
         public async Task<IActionResult> MapaAsientos(int idFuncion)
         {
@@ -96,6 +107,34 @@ namespace CineramaWebApp.Controllers
                 codigoTicket = resultadoVenta.CodigoTicket,
                 urlPdf = resultadoVenta.UrlPDF
             });
+
+
+        }
+
+        //
+        // GET: /Venta/Pago
+        [HttpGet]
+        public IActionResult Pago()
+        {
+            return View();
+        }
+
+        // GET: /Venta/Confirmacion?idVenta=X&codigoTicket=Y&urlPdf=Z
+        [HttpGet]
+        public IActionResult Confirmacion(int idVenta, string codigoTicket, string urlPdf)
+        {
+            ViewBag.IdVenta = idVenta;
+            ViewBag.CodigoTicket = codigoTicket;
+            ViewBag.UrlPdf = urlPdf;
+            return View();
+        }
+
+        // GET: /Venta/Identificacion
+        [HttpGet]
+        public IActionResult Identificacion()
+        {
+            return View();
         }
     }
+
 }

@@ -11,5 +11,7 @@
         public string TipoUsuario { get; set; } = "REGISTRADO";
         public bool Estado { get; set; }
         public DateTime FechaRegistro { get; set; }
+
+        public DateTime FechaNacimiento { get; set; }
     }
 }

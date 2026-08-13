@@ -31,11 +31,12 @@ namespace CineramaWebApp.Repositories
                 "sp_RegistrarUsuarioCliente",
                 new
                 {
-                    usuario.Nombre,
-                    usuario.Apellido,
-                    usuario.Email,
-                    usuario.PasswordHash,
-                    usuario.Telefono
+                    nombres = usuario.Nombre,
+                    apellidos = usuario.Apellido,
+                    email = usuario.Email,
+                    passwordHash = usuario.PasswordHash,
+                    celular = usuario.Telefono,
+                    fechaNacimiento = usuario.FechaNacimiento
                 },
                 commandType: CommandType.StoredProcedure);
         }

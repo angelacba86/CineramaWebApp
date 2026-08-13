@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "¡Compra Exitosa! - Cinerama";
+    int idVenta = ViewBag.IdVenta ?? 0;
+    string codigoTicket = ViewBag.CodigoTicket ?? "TICK-000";
+    string urlPdf = ViewBag.UrlPdf ?? "";
+}
+
+<div class="container my-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card bg-dark text-white border-success shadow-lg">
+                <div class="card-body p-5">
+                    <div class="mb-3">
+                        <span class="display-1 text-success">✓</span>
+                    </div>
+                    <h2 class="fw-bold text-success mb-2">¡COMPRA EXITOSA!</h2>
+                    <p class="fs-5 mb-1">Tu reserva ha sido procesada correctamente.</p>
+                    <p class="text-white-50 mb-4">Código de Ticket: <strong class="text-warning">@codigoTicket</strong></p>
+
+                    <div class="d-grid gap-3 col-10 mx-auto">
+                        @if (!string.IsNullOrEmpty(urlPdf))
+                        {
+                            <a href="@urlPdf" target="_blank" class="btn btn-danger btn-lg fw-bold">
+                                📄 Descargue su Boleto (PDF)
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="btn btn-danger btn-lg fw-bold" onclick="alert('El boleto se ha registrado correctamente en el sistema.')">
+                                📄 Boleto Generado (#@idVenta)
+                            </button>
+                        }
+
+                        <a href="/Home/Index" class="btn btn-outline-light">
+                            Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
