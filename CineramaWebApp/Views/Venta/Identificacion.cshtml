@@ -20,7 +20,7 @@
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link text-white fw-bold" id="registro-tab" data-bs-toggle="pill" data-bs-target="#registro" type="button" role="tab">
-                                📝 Registrate
+                                📝 Regístrate
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -30,7 +30,6 @@
                         </li>
                     </ul>
 
-                    <!-- Mensaje de error / éxito genérico -->
                     <div id="alertBox" class="alert d-none" role="alert"></div>
 
                     <div class="tab-content" id="identificacionTabContent">
@@ -38,11 +37,11 @@
                         <div class="tab-pane fade show active" id="login" role="tabpanel">
                             <form id="formLogin" onsubmit="procesarLogin(event)">
                                 <div class="mb-3">
-                                    <label class="form-label">Correo Electrónico</label>
+                                    <label class="form-label text-white">Correo Electrónico</label>
                                     <input type="email" id="loginEmail" class="form-control bg-secondary text-white border-0" placeholder="correo@ejemplo.com" required>
                                 </div>
                                 <div class="mb-4">
-                                    <label class="form-label">Contraseña</label>
+                                    <label class="form-label text-white">Contraseña</label>
                                     <input type="password" id="loginPassword" class="form-control bg-secondary text-white border-0" placeholder="••••••••" required>
                                 </div>
                                 <button type="submit" id="btnLogin" class="btn btn-danger w-100 btn-lg fw-bold">
@@ -55,31 +54,31 @@
                             <form id="formRegistro" onsubmit="procesarRegistro(event)">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label">Nombres</label>
+                                        <label class="form-label text-white">Nombres</label>
                                         <input type="text" id="regNombre" class="form-control bg-secondary text-white border-0" placeholder="Nombre" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label">Apellidos</label>
+                                        <label class="form-label text-white">Apellidos</label>
                                         <input type="text" id="regApellido" class="form-control bg-secondary text-white border-0" placeholder="Apellido" required>
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Correo Electrónico</label>
+                                    <label class="form-label text-white">Correo Electrónico</label>
                                     <input type="email" id="regEmail" class="form-control bg-secondary text-white border-0" placeholder="correo@ejemplo.com" required>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label">Teléfono (opcional)</label>
+                                        <label class="form-label text-white">Teléfono (opcional)</label>
                                         <input type="tel" id="regTelefono" class="form-control bg-secondary text-white border-0" placeholder="999 999 999">
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label">Fecha de Nacimiento</label>
+                                        <label class="form-label text-white">Fecha de Nacimiento</label>
                                         <input type="date" id="regFechaNacimiento" class="form-control bg-secondary text-white border-0" required>
                                     </div>
                                 </div>
                                 <div class="mb-4">
-                                    <label class="form-label">Contraseña</label>
-                                    <input type="password" id="regPassword" class="form-control bg-secondary text-white border-0" placeholder="Aqui tu contraseña, que nadie mas la vea" required minlength="6">
+                                    <label class="form-label text-white">Contraseña</label>
+                                    <input type="password" id="regPassword" class="form-control bg-secondary text-white border-0" placeholder="Mínimo 6 caracteres" required minlength="6">
                                 </div>
                                 <button type="submit" id="btnRegistro" class="btn btn-danger w-100 btn-lg fw-bold">
                                     REGISTRARME Y CONTINUAR
@@ -88,8 +87,10 @@
                         </div>
 
                         <div class="tab-pane fade text-center py-3" id="invitado" role="tabpanel">
-                            <div class="alert alert-dark border-secondary text-white-50 mb-4">
-                                ℹ️ Comprarás como invitado sin acumular Puntos Cinerama. Puedes registrarte en cualquier otro momento.
+                            <div class="p-3 mb-4 rounded-3 text-start" style="background-color: #1a1a1a; border: 1px solid rgba(220, 53, 69, 0.4); color: #ffffff;">
+                                <p class="mb-0 small">
+                                    ℹ️ Comprarás como invitado sin acumular <strong>Puntos Cinerama</strong>. Puedes registrarte en cualquier otro momento.
+                                </p>
                             </div>
                             <button type="button" class="btn btn-outline-light btn-lg w-100 fw-bold" onclick="continuarComoInvitado()">
                                 SEGUIR COMO INVITADO ➔
@@ -118,10 +119,8 @@
         btn.textContent = cargando ? "Procesando..." : textoNormal;
     }
 
-    // 1. Login real contra el backend
     async function procesarLogin(e) {
         e.preventDefault();
-
         const email = document.getElementById("loginEmail").value.trim();
         const password = document.getElementById("loginPassword").value;
 
@@ -151,10 +150,8 @@
         }
     }
 
-    // 2. Registro real contra el backend
     async function procesarRegistro(e) {
         e.preventDefault();
-
         const nombre = document.getElementById("regNombre").value.trim();
         const apellido = document.getElementById("regApellido").value.trim();
         const email = document.getElementById("regEmail").value.trim();
@@ -206,7 +203,6 @@
         }
     }
 
-    // 3. Continuar como invitado directo al pago
     function continuarComoInvitado() {
         sessionStorage.setItem("tipoUsuario", "Invitado");
         window.location.href = "/Venta/Pago";

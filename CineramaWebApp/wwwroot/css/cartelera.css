@@ -1,11 +1,12 @@
-﻿/* ==========================================
-   1. ESTILOS GENERALES Y LAYOUT BASE
+﻿/* ==========================================================
+   ESTILOS GENERALES Y LAYOUT BASE
    ========================================== */
 body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     background-color: #212529;
+    color: #ffffff;
 }
 
 .main-content {
@@ -31,8 +32,8 @@ footer {
             color: #dc3545;
         }
 
-/* ==========================================
-   2. CARDS DE PELÍCULAS (CARTELERA PRINCIPAL)
+/* ==========================================================
+   CARDS DE PELÍCULAS (CARTELERA PRINCIPAL)
    ========================================== */
 .movie-card {
     position: relative;
@@ -85,10 +86,9 @@ footer {
     overflow: hidden;
 }
 
-/* ==========================================
-   3. PASO 1 Y PASO 2 (DETALLE DE PELÍCULA)
+/* ==========================================================
+   SELECCIÓN DE CINES Y HORARIOS (DETALLE)
    ========================================== */
-/* Cards de Selección de Cine */
 .card-cine-select {
     background-color: transparent !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -101,7 +101,6 @@ footer {
         transform: translateY(-2px);
     }
 
-/* Píldoras de Horarios completamente rojas */
 .pildora-horario {
     background-color: #dc3545 !important;
     color: #ffffff !important;
@@ -117,7 +116,6 @@ footer {
         transform: scale(1.05);
     }
 
-/* Botón sutil 'Cambiar Cine' */
 .btn-cambiar-cine {
     color: #ffffff !important;
     text-decoration: none !important;
@@ -134,6 +132,48 @@ footer {
 }
 
     .btn-cambiar-cine:hover {
+        color: #adb5bd !important;
+        text-decoration: underline !important;
+    }
+
+/* ==========================================================
+   MAPA DE ASIENTOS Y ESTILOS DE COMPRA
+   ========================================== */
+/* Barra de desplazamiento elegante para el mapa de butacas */
+#gridAsientosWrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+#gridAsientosWrapper::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 4px;
+}
+
+#gridAsientosWrapper::-webkit-scrollbar-thumb {
+    background: #dc3545;
+    border-radius: 4px;
+}
+
+    #gridAsientosWrapper::-webkit-scrollbar-thumb:hover {
+        background: #bb2d3b;
+    }
+
+/* Botón sutil de retroceso en pantallas de venta */
+.btn-volver-atras {
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    transition: color 0.2s ease !important;
+}
+
+    .btn-volver-atras:hover {
         color: #adb5bd !important;
         text-decoration: underline !important;
     }

@@ -27,10 +27,12 @@ namespace CineramaWebApp.Controllers
         // GET: /Venta/SeleccionarAsientos?idFuncion=1
         // =========================================================================
         [HttpGet]
-        public IActionResult SeleccionarAsientos(int idFuncion = 1)
+        [Route("Venta/SeleccionarAsiento")]
+        [Route("Venta/SeleccionarAsientos")]
+        public IActionResult SeleccionarAsiento(int idFuncion = 1)
         {
             ViewBag.IdFuncion = idFuncion;
-            return View();
+            return View("SeleccionarAsientos");
         }
 
         // GET: /Venta/MapaAsientos?idFuncion=1 (Consumido mediante fetch por JavaScript)
