@@ -72,6 +72,7 @@
         const ID_FUNCION = @idFuncion;
         const PRECIO_UNITARIO = 15.00;
         let asientosSeleccionados = [];
+        const USUARIO_AUTENTICADO = @(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false");
 
         document.addEventListener("DOMContentLoaded", () => {
             fetch(`/Venta/MapaAsientos?idFuncion=${ID_FUNCION}`)
@@ -171,19 +172,28 @@
         }
 
         function irAlPago() {
-            if (!asientosSeleccionados || asientosSeleccionados.length === 0) {
-                alert("Por favor, selecciona al menos un asiento antes de continuar.");
-                return;
-            }
+    if (!asientosSeleccionados || asientosSeleccionados.length === 0) {
+        alert("Por favor, selecciona al menos un asiento antes de continuar.");
+        return;
+    }
 
-            const totalCalculado = asientosSeleccionados.length * PRECIO_UNITARIO;
-            const listaIds = asientosSeleccionados.map(a => a.idAsiento);
+    const totalCalculado = asientosSeleccionados.length * PRECIO_UNITARIO;
+    const listaIds = asientosSeleccionados.map(a => a.idAsiento);
 
-            sessionStorage.setItem("idFuncion", ID_FUNCION.toString());
-            sessionStorage.setItem("asientosIds", JSON.stringify(listaIds));
-            sessionStorage.setItem("montoTotal", totalCalculado.toString());
+    sessionStorage.setItem("idFuncion", ID_FUNCION.toString());
+    sessionStorage.setItem("asientosIds", JSON.stringify(listaIds));
+    sessionStorage.setItem("montoTotal", totalCalculado.toString());
 
-            window.location.href = '/Venta/Identificacion';
+    const tipoUsuario = sessionStorage.getItem("tipoUsuario");
+
+    if (USUARIO_AUTENTICADO || tipoUsuario === "Invitado") {
+        if (USUARIO_AUTENTICADO) {
+            sessionStorage.setItem("tipoUsuario", "Registrado");
         }
+        window.location.href = '/Venta/Pago';
+    } else {
+        window.location.href = '/Venta/Identificacion';
+    }
+}
     </script>
 }

@@ -142,7 +142,7 @@
             }
 
             sessionStorage.setItem("tipoUsuario", "Registrado");
-            window.location.href = "/Venta/Pago";
+            redireccionarSegunOrigen();
         } catch (err) {
             console.error(err);
             mostrarAlerta("No se pudo conectar con el servidor. Intenta nuevamente.");
@@ -150,61 +150,93 @@
         }
     }
 
-    async function procesarRegistro(e) {
-        e.preventDefault();
-        const nombre = document.getElementById("regNombre").value.trim();
-        const apellido = document.getElementById("regApellido").value.trim();
-        const email = document.getElementById("regEmail").value.trim();
-        const telefono = document.getElementById("regTelefono").value.trim();
-        const fechaNacimiento = document.getElementById("regFechaNacimiento").value;
-        const password = document.getElementById("regPassword").value;
+ async function procesarRegistro(e) {
+    e.preventDefault();
+    const nombre = document.getElementById("regNombre").value.trim();
+    const apellido = document.getElementById("regApellido").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const telefono = document.getElementById("regTelefono").value.trim();
+    const fechaNacimiento = document.getElementById("regFechaNacimiento").value;
+    const password = document.getElementById("regPassword").value;
 
-        if (!fechaNacimiento) {
-            mostrarAlerta("Por favor ingresa tu fecha de nacimiento.");
+    if (!fechaNacimiento) {
+        mostrarAlerta("Por favor ingresa tu fecha de nacimiento.");
+        return;
+    }
+
+    setCargando("btnRegistro", true, "REGISTRARME Y CONTINUAR");
+
+    try {
+        const res = await fetch("/Account/Registrar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                Nombre: nombre,
+                Apellido: apellido,
+                Email: email,
+                Password: password,
+                Telefono: telefono || null,
+                FechaNacimiento: fechaNacimiento
+            })
+        });
+
+        const data = await res.json();
+
+        if (!data.exito) {
+            mostrarAlerta(data.mensaje || "No se pudo completar el registro.");
+            setCargando("btnRegistro", false, "REGISTRARME Y CONTINUAR");
             return;
         }
 
-        setCargando("btnRegistro", true, "REGISTRARME Y CONTINUAR");
+        // Registro exitoso: iniciar sesión automáticamente con las mismas credenciales
+        const resLogin = await fetch("/Account/Login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ Email: email, Password: password })
+        });
+        const dataLogin = await resLogin.json();
 
-        try {
-            const res = await fetch("/Account/Registrar", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    Nombre: nombre,
-                    Apellido: apellido,
-                    Email: email,
-                    Password: password,
-                    Telefono: telefono || null,
-                    FechaNacimiento: fechaNacimiento
-                })
-            });
-
-            const data = await res.json();
-
-            if (!data.exito) {
-                mostrarAlerta(data.mensaje || "No se pudo completar el registro.");
-                setCargando("btnRegistro", false, "REGISTRARME Y CONTINUAR");
-                return;
-            }
-
-            mostrarAlerta("¡Registro exitoso! Ahora inicia sesión para continuar.", "success");
-
-            setTimeout(() => {
-                document.getElementById("login-tab").click();
-                document.getElementById("loginEmail").value = email;
-            }, 1200);
-
-            setCargando("btnRegistro", false, "REGISTRARME Y CONTINUAR");
-        } catch (err) {
-            console.error(err);
-            mostrarAlerta("No se pudo conectar con el servidor. Intenta nuevamente.");
-            setCargando("btnRegistro", false, "REGISTRARME Y CONTINUAR");
+        if (dataLogin.exito) {
+            sessionStorage.setItem("tipoUsuario", "Registrado");
+            redireccionarSegunOrigen();
+            return;
         }
-    }
 
-    function continuarComoInvitado() {
-        sessionStorage.setItem("tipoUsuario", "Invitado");
+        // Si por algún motivo el auto-login falla, se le pide loguearse manualmente
+        mostrarAlerta("¡Registro exitoso! Ahora inicia sesión para continuar.", "success");
+        setTimeout(() => {
+            document.getElementById("login-tab").click();
+            document.getElementById("loginEmail").value = email;
+        }, 1200);
+        setCargando("btnRegistro", false, "REGISTRARME Y CONTINUAR");
+    } catch (err) {
+        console.error(err);
+        mostrarAlerta("No se pudo conectar con el servidor. Intenta nuevamente.");
+        setCargando("btnRegistro", false, "REGISTRARME Y CONTINUAR");
+    }
+}
+
+function continuarComoInvitado() {
+    sessionStorage.setItem("tipoUsuario", "Invitado");
+    redireccionarSegunOrigen();
+}
+
+    function redireccionarSegunOrigen() {
+    const asientosIds = JSON.parse(sessionStorage.getItem("asientosIds") || "[]");
+    const returnUrl = sessionStorage.getItem("returnUrl");
+
+    // 1. Si venía del flujo de compra (con asientos seleccionados) -> va a Pago
+    if (asientosIds.length > 0) {
         window.location.href = "/Venta/Pago";
     }
+    // 2. Si venía del botón "Iniciar Sesión" del navbar -> regresa a esa página
+    else if (returnUrl) {
+        sessionStorage.removeItem("returnUrl");
+        window.location.href = returnUrl;
+    }
+    // 3. Por defecto -> Cartelera
+    else {
+        window.location.href = "/Cartelera/Index";
+    }
+}
 </script>

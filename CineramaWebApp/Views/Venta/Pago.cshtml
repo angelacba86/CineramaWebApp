@@ -86,31 +86,21 @@
 </div>
 
 <script>
-
-
     document.addEventListener("DOMContentLoaded", function () {
-    // 1. Mostrar el monto total guardado
-    const total = sessionStorage.getItem("montoTotal") || "0.00";
-    document.getElementById("lblTotalPagar").textContent = "S/ " + parseFloat(total).toFixed(2);
-
-    // 2. Validar tipo de usuario (Ocultar pestaña de Puntos si es Invitado)
-    const tipoUsuario = sessionStorage.getItem("tipoUsuario") || "Invitado";
-    const tabPuntos = document.getElementById("puntos-tab");
-    const containerPuntos = tabPuntos ? tabPuntos.closest("li") : null;
-
-    if (tipoUsuario === "Invitado" && containerPuntos) {
-        // Ocultar la pestaña/botón de Puntos
-        containerPuntos.style.display = "none";
-        
-        // Si la pestaña activa por defecto fuera puntos, la cambiamos a tarjeta
-        const tarjetaTab = document.getElementById("tarjeta-tab");
-        if (tarjetaTab) tarjetaTab.click();
-    }
-});
-
-    document.addEventListener("DOMContentLoaded", function () {
+        // Mostrar el monto total guardado
         const total = sessionStorage.getItem("montoTotal") || "0.00";
         document.getElementById("lblTotalPagar").textContent = "S/ " + parseFloat(total).toFixed(2);
+
+        // Ocultar la pestaña de Puntos si es Invitado
+        const tipoUsuario = sessionStorage.getItem("tipoUsuario") || "Invitado";
+        const tabPuntos = document.getElementById("puntos-tab");
+        const containerPuntos = tabPuntos ? tabPuntos.closest("li") : null;
+
+        if (tipoUsuario === "Invitado" && containerPuntos) {
+            containerPuntos.style.display = "none";
+            const tarjetaTab = document.getElementById("tarjeta-tab");
+            if (tarjetaTab) tarjetaTab.click();
+        }
     });
 
     function ejecutarCompra() {
@@ -122,10 +112,9 @@
             return;
         }
 
-        // DTO exacto esperado por tu VentaController (ProcesarCompra)
         const payload = {
             IdFuncion: parseInt(idFuncion),
-            IdUsuario: 1, 
+            IdUsuario: 1, // El backend lo sobrescribe si hay sesión real
             ListaAsientos: asientosIds
         };
 
@@ -137,11 +126,9 @@
         .then(res => res.json())
         .then(data => {
             if (data.exito) {
-                // Limpiamos los datos del mapa de asientos
                 sessionStorage.removeItem("asientosIds");
                 sessionStorage.removeItem("montoTotal");
 
-                // Redireccionar a la pantalla de confirmación enviando datos del ticket
                 const urlConfirmacion = `/Venta/Confirmacion?idVenta=${data.idVenta}&codigoTicket=${encodeURIComponent(data.codigoTicket || '')}&urlPdf=${encodeURIComponent(data.urlPdf || '')}`;
                 window.location.href = urlConfirmacion;
             } else {

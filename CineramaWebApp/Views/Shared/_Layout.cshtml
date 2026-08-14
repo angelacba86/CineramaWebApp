@@ -77,21 +77,28 @@
                     }
                 </script>
 
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center" id="seccionUsuarioNavbar">
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
                         <a asp-controller="Cuenta" asp-action="MiCuenta" class="btn btn-outline-light btn-sm me-2">
                             👤 Mi Cuenta (@User.Identity.Name)
                         </a>
-                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-danger">Salir</button>
-                        </form>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline" id="formLogoutReal">
+                           <button type="submit" class="btn btn-sm btn-danger">Salir</button>
+                        </form> 
                     }
                     else
                     {
-                        <a asp-controller="Account" asp-action="Login" class="btn btn-danger btn-sm px-3 fw-bold">
+                        <a href="/Venta/Identificacion" id="btnNavLogin" class="btn btn-danger btn-sm px-3 fw-bold" onclick="guardarPaginaYRedirigir(event)">
                             Iniciar Sesión
                         </a>
+
+                        <div id="bloqueInvitado" class="d-none align-items-center gap-2">
+                            <span class="text-white fw-bold me-2">🎟️ Invitado</span>
+                            <a href="/Venta/Identificacion" id="btnLoginDesdeInvitado" class="btn btn-danger btn-sm px-3 fw-bold" onclick="guardarPaginaYRedirigir(event)">
+                                Iniciar Sesión
+                            </a>
+                        </div>
                     }
                 </div>
             </div>
@@ -128,6 +135,64 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                verificarEstadoInvitadoNavbar();
+
+                const formLogout = document.getElementById("formLogoutReal");
+                if (formLogout) {
+                    formLogout.addEventListener("submit", limpiarSessionStorageAntesDeSalir);
+                }
+            });
+
+                        function limpiarSessionStorageAntesDeSalir(e) {
+                e.preventDefault();
+
+                sessionStorage.removeItem("tipoUsuario");
+                sessionStorage.removeItem("returnUrl");
+                sessionStorage.removeItem("asientosIds");
+                sessionStorage.removeItem("idFuncion");
+                sessionStorage.removeItem("montoTotal");
+
+                fetch("/Account/Logout", { method: "POST" })
+                    .then(() => {
+                        window.location.reload();
+                    })
+                    .catch(err => {
+                        console.error("Error al cerrar sesión:", err);
+                        window.location.reload();
+                    });
+            }
+
+            function verificarEstadoInvitadoNavbar() {
+                const btnLogin = document.getElementById("btnNavLogin");
+                if (!btnLogin) return;
+
+                const bloqueInvitado = document.getElementById("bloqueInvitado");
+                const tipoUsuario = sessionStorage.getItem("tipoUsuario");
+
+                if (tipoUsuario === "Invitado") {
+                    btnLogin.classList.add("d-none");
+                    if (bloqueInvitado) {
+                        bloqueInvitado.classList.remove("d-none");
+                        bloqueInvitado.classList.add("d-flex");
+                    }
+                } else {
+                    btnLogin.classList.remove("d-none");
+                    if (bloqueInvitado) {
+                        bloqueInvitado.classList.add("d-none");
+                        bloqueInvitado.classList.remove("d-flex");
+                    }
+                }
+            }
+
+            function guardarPaginaYRedirigir(e) {
+                e.preventDefault();
+                sessionStorage.setItem("returnUrl", window.location.href);
+                window.location.href = "/Venta/Identificacion";
+            }
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>  | 
