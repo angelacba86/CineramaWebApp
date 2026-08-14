@@ -1,11 +1,12 @@
 ﻿using System.Security.Claims;
+using CineramaWebApp.Models.ViewModels;
 using CineramaWebApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CineramaWebApp.Controllers
 {
-    [Authorize] // Requiere que el usuario esté autenticado con su sesión activa
+    [Authorize]
     public class CuentaController : Controller
     {
         private readonly IFidelizacionService _fidelizacionService;
@@ -19,26 +20,38 @@ namespace CineramaWebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> MiCuenta()
         {
-            // Obtener el ID del usuario desde las Cookies de Autenticación
             var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(idClaim, out int idUsuario))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            // Consultar historial de compras y puntos vía Dapper
-            var historial = await _fidelizacionService.ObtenerHistorialComprasAsync(idUsuario);
-
-            // Obtener puntos acumulados guardados en la Claim de sesión
+            var historialRaw = await _fidelizacionService.ObtenerHistorialComprasAsync(idUsuario);
             string puntos = User.FindFirst("Puntos")?.Value ?? "0";
-            ViewBag.PuntosAcumulados = puntos;
 
-            return Json(new
+            var compras = new List<CompraHistorialViewModel>();
+            foreach (dynamic item in historialRaw)
             {
-                usuario = User.Identity?.Name,
-                puntosAcumulados = puntos,
-                compras = historial
-            });
+                compras.Add(new CompraHistorialViewModel
+                {
+                    IdVenta = item.idVenta,
+                    CodigoQR = item.codigoQR,
+                    Fecha = item.fecha,
+                    Monto = item.monto,
+                    Pelicula = item.pelicula,
+                    Cine = item.cine,
+                    Funcion = item.funcion
+                });
+            }
+
+            var modelo = new MiCuentaViewModel
+            {
+                Usuario = User.Identity?.Name ?? "Usuario",
+                PuntosAcumulados = puntos,
+                Compras = compras
+            };
+
+            return View(modelo);
         }
     }
 }
