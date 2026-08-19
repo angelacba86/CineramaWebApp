@@ -1,4 +1,4 @@
-﻿using CineramaWebApp.Models.DTOs;
+using CineramaWebApp.Models.DTOs;
 using CineramaWebApp.Models.Entities;
 namespace CineramaWebApp.Repositories
 {
@@ -6,5 +6,6 @@ namespace CineramaWebApp.Repositories
     {
         Task<UsuarioSesionDTO?> AutenticarUsuarioAsync(string email, string passwordHash);
         Task<int> RegistrarUsuarioClienteAsync(Usuario usuario);
+        Task<int> ObtenerPuntosUsuarioAsync(int idUsuario);
     }
 }

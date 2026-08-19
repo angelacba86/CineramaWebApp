@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using CineramaWebApp.Models.DTOs;
 using CineramaWebApp.Models.Entities;
 using Dapper;
@@ -39,6 +39,15 @@ namespace CineramaWebApp.Repositories
                     fechaNacimiento = usuario.FechaNacimiento
                 },
                 commandType: CommandType.StoredProcedure);
+        }
+
+        public async Task<int> ObtenerPuntosUsuarioAsync(int idUsuario)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            return await connection.QueryFirstOrDefaultAsync<int>(
+                "SELECT puntosFidelizacion FROM UsuarioRegistrado WHERE idUsuario = @idUsuario",
+                new { idUsuario }
+            );
         }
     }
 }

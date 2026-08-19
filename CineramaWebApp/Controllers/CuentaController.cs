@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using CineramaWebApp.Models.ViewModels;
 using CineramaWebApp.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -27,7 +27,8 @@ namespace CineramaWebApp.Controllers
             }
 
             var historialRaw = await _fidelizacionService.ObtenerHistorialComprasAsync(idUsuario);
-            string puntos = User.FindFirst("Puntos")?.Value ?? "0";
+            int puntosDB = await _fidelizacionService.ObtenerPuntosUsuarioAsync(idUsuario);
+            string puntos = puntosDB.ToString();
 
             var compras = new List<CompraHistorialViewModel>();
             foreach (dynamic item in historialRaw)
